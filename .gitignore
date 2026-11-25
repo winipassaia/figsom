@@ -1,0 +1,10 @@
+# NUNCA versionar: sessão do WhatsApp (dá acesso total à conta)
+auth/
+
+node_modules/
+dumps/
+memes/*
+!memes/.gitkeep
+*.log
+.DS_Store
+Thumbs.db
