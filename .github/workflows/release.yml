@@ -81,6 +81,13 @@ jobs:
           path: arquivos
           merge-multiple: true
       - name: Publicar release
-        run: gh release create "$GITHUB_REF_NAME" arquivos/* --title "figsom $GITHUB_REF_NAME" --notes-file .github/NOTAS_RELEASE.md
+        run: |
+          # se a release já foi criada pelo site do GitHub, só anexa os arquivos e completa as notas
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" arquivos/* --clobber
+            gh release edit "$GITHUB_REF_NAME" --title "figsom $GITHUB_REF_NAME" --notes-file .github/NOTAS_RELEASE.md
+          else
+            gh release create "$GITHUB_REF_NAME" arquivos/* --title "figsom $GITHUB_REF_NAME" --notes-file .github/NOTAS_RELEASE.md
+          fi
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
