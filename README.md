@@ -24,6 +24,8 @@ Responda um vídeo com `!som` e a figurinha volta com o áudio do próprio víde
 
 Por padrão o bot só aceita comandos na conversa "Você", não guarda mensagens de ninguém e não baixa histórico.
 
+> **Primeira vez usando terminal?** Siga o **[tutorial passo a passo](docs/TUTORIAL.md)**.
+
 ## Requisitos
 
 - [Node.js](https://nodejs.org) **20+**
