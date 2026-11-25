@@ -1,6 +1,6 @@
 # Tutorial: instalação e uso do figsom
 
-Guia pra quem nunca usou terminal. Leva uns 10 minutos. Os exemplos são pro **Windows**; os comandos de Linux e macOS estão marcados quando forem diferentes.
+Guia pra quem nunca usou terminal. Leva uns 10 minutos. A instalação aqui é pro **Windows**. **No Linux, siga o [guia de Linux](LINUX.md)** e depois volte pra [Parte 3](#parte-3-criar-figurinhas-com-som).
 
 > [!WARNING]
 > O figsom é **não oficial** e conecta no seu WhatsApp como um aparelho vinculado. Isso viola os termos do WhatsApp e **pode causar banimento**. O risco é baixo pra uso pessoal, mas existe. Se puder, use um número secundário. Leia a seção [Dicas de segurança](../README.md#dicas-de-segurança).
@@ -45,6 +45,9 @@ Tem que aparecer um texto começando com `ffmpeg version ...`.
 ```
 git clone https://github.com/winipassaia/figsom.git
 ```
+
+> [!TIP]
+> **Atalho:** depois de instalar o Node.js e o ffmpeg e de extrair o ZIP, você pode só dar **dois cliques no `iniciar.bat`** dentro da pasta. Ele confere tudo, instala as dependências na primeira vez e liga o bot. Com isso, os passos 4 a 6 viram um clique só.
 
 ### 4. Abra o terminal dentro da pasta
 
@@ -117,8 +120,18 @@ No terminal aparece:
 ```
 A **figurinha com som** chega na conversa, com um ícone de áudio. A mensagem `!som` é apagada sozinha.
 
-> [!TIP]
-> Vídeos **quadrados ou verticais** ficam melhores. Vídeo horizontal vira uma faixa fina com bordas transparentes.
+### Opções do `!som`
+
+Dá pra combinar opções em qualquer ordem:
+
+| Comando | Resultado |
+|---|---|
+| `!som` | Figurinha **quadrada**, cortando o **centro** do vídeo (padrão) |
+| `!som ajustar` | Vídeo **inteiro** dentro do quadrado, com bordas transparentes |
+| `!som 2-6` | Usa só do segundo **2** ao **6** (imagem e som) |
+| `!som 1,5-4 ajustar` | Trecho de 1,5 s a 4 s, com o vídeo inteiro |
+
+O limite é de **10 segundos**. Se o trecho for maior, ele é cortado nos 10 s.
 
 ### 10. Salve e use
 
@@ -139,7 +152,7 @@ Pra criar sem mandar o vídeo pelo WhatsApp, coloque os arquivos na pasta `memes
 | `gato.gif` + `gato.mp3` | `!som gato` | GIF com o áudio do mp3 |
 | `pronta.webp` + `pronta.ogg` | `!som pronta` | Figurinha que você já tem + som |
 
-`!som lista` mostra tudo que tem na pasta.
+As opções também funcionam aqui: `!som tome 3-7`, `!som gato ajustar`. `!som lista` mostra tudo que tem na pasta.
 
 ### 12. Desligue quando terminar
 
@@ -158,6 +171,7 @@ Pra desconectar de vez: no celular, vá em **Aparelhos conectados**, toque no ap
 | O QR expirou | Ele se renova sozinho. Se não renovar, aperte Ctrl + C e rode `npm start` de novo. |
 | `Deslogado. Apaga a pasta auth/` | Você desconectou pelo celular. Apague a pasta `auth/` e escaneie de novo. |
 | `!som` não faz nada | Confira se está na conversa **"Você"** e se **respondeu** o vídeo (segurar e Responder). |
+| A figurinha cortou uma parte importante | Use `!som ajustar` pra manter o vídeo inteiro. |
 | A figurinha chegou sem som | Ela foi encaminhada. Mande pelo teclado de figurinhas. |
 | `Conexão caiu, reconectando...` | É normal de vez em quando. Ele reconecta sozinho. |
 

@@ -15,7 +15,7 @@ Responda um vídeo com `!som` e a figurinha volta com o áudio do próprio víde
 
 1. O bot conecta no seu WhatsApp como um aparelho vinculado, igual ao WhatsApp Web.
 2. Na conversa com você mesmo (**"Você"**), você manda um vídeo e responde com `!som`.
-3. O bot converte o vídeo em **WebP animado 512×512** e o áudio em **OGG/Opus** (até 10 s) usando o ffmpeg.
+3. O bot converte o vídeo em **WebP animado 512×512** (cortado no centro) e o áudio em **OGG/Opus** (até 10 s) usando o ffmpeg.
 4. O bot envia a figurinha com som nessa mesma conversa.
 5. Você toca nela, **salva nas figurinhas** e manda pra quem quiser pelo teclado.
 
@@ -24,7 +24,7 @@ Responda um vídeo com `!som` e a figurinha volta com o áudio do próprio víde
 
 Por padrão o bot só aceita comandos na conversa "Você", não guarda mensagens de ninguém e não baixa histórico.
 
-> **Primeira vez usando terminal?** Siga o **[tutorial passo a passo](docs/TUTORIAL.md)**.
+> **Primeira vez usando terminal?** Siga o tutorial passo a passo: **[Windows](docs/TUTORIAL.md)** · **[Linux](docs/LINUX.md)**
 
 ## Requisitos
 
@@ -39,9 +39,13 @@ Por padrão o bot só aceita comandos na conversa "Você", não guarda mensagens
 ```bash
 git clone https://github.com/winipassaia/figsom.git
 cd figsom
-npm install
-npm start
 ```
+
+Depois:
+- **Windows:** dê dois cliques em `iniciar.bat`.
+- **Linux/macOS:** rode `./iniciar.sh`.
+
+Os scripts conferem o Node e o ffmpeg, rodam `npm install` na primeira vez e iniciam o bot. Também dá pra fazer na mão, com `npm install && npm start`.
 
 No celular, vá em **WhatsApp → Aparelhos conectados → Conectar aparelho** e escaneie o QR que aparece no terminal. A sessão fica salva na pasta `auth/`, então nas próximas vezes não precisa escanear de novo.
 
@@ -57,6 +61,16 @@ Todos funcionam só na conversa **"Você"**:
 | `!som` (respondendo um vídeo) | Transforma o vídeo em figurinha com o áudio dele |
 | `!som nome` | Usa os arquivos da pasta `memes/` (veja abaixo) |
 | `!som lista` | Lista os memes da pasta `memes/` |
+
+**Opções** (combináveis, em qualquer ordem, em qualquer comando acima):
+
+| Opção | Efeito |
+|---|---|
+| *(nenhuma)* | Figurinha quadrada cortando o **centro** do vídeo |
+| `ajustar` | Vídeo **inteiro** no quadrado, com bordas transparentes |
+| `2-6` | Usa só do segundo 2 ao 6 (aceita `1,5-4`). Máximo de 10 s. |
+
+Exemplos: `!som 2-6`, `!som ajustar`, `!som tome 3-7 ajustar`.
 
 ### Pasta `memes/`
 
@@ -101,8 +115,9 @@ Message
 
 ## Roadmap
 
-- [ ] `!som quadrado`: cortar o centro do vídeo em vez de encaixar com transparência
-- [ ] `!som 2-6`: usar só um trecho do vídeo
+- [x] Figurinha 1:1 cortando o centro (padrão) e `ajustar`
+- [x] `!som 2-6`: usar só um trecho do vídeo
+- [x] Scripts de iniciar pra Windows e Linux
 - [ ] Áudio por link (ex.: MyInstants)
 - [ ] Imagem/GIF + áudio respondendo mensagens
 - [ ] Editor web local com prévia

@@ -140,15 +140,15 @@ async function acharArquivo(nome, exts) {
   return null
 }
 
-async function carregarMeme(nome) {
+async function carregarMeme(nome, opcoes) {
   const webpPronto = await acharArquivo(nome, ['.webp'])
   const video = await acharArquivo(nome, VIDEO)
   const audio = await acharArquivo(nome, AUDIO)
   if (!webpPronto && !video) throw new Error(`não achei ${nome}.webp nem vídeo (${VIDEO.join(' ')}) em ${MEMES_DIR}/`)
   const fonteAudio = audio || video
   if (!fonteAudio) throw new Error(`não achei áudio pra ${nome} (${AUDIO.join(' ')})`)
-  const webp = webpPronto ? await fs.readFile(webpPronto) : await paraWebp(video)
-  const ogg = await paraOgg(fonteAudio)
+  const webp = webpPronto ? await fs.readFile(webpPronto) : await paraWebp(video, opcoes)
+  const ogg = await paraOgg(fonteAudio, opcoes)
   return { webp, ogg }
 }
 
@@ -164,16 +164,26 @@ async function tratarComando(sock, msg) {
   if (!/^!som\b/i.test(texto)) return
   jaVistos.add(msg.key.id)
   const jid = msg.key.remoteJid
-  const arg = texto.slice(4).trim()
+  // "!som [nome] [ajustar] [2-6]" — em qualquer ordem
+  const opcoes = { modo: 'cortar' }
+  const resto = []
+  for (const t of texto.slice(4).trim().split(/\s+/).filter(Boolean)) {
+    const faixa = t.match(/^(\d+(?:[.,]\d+)?)-(\d+(?:[.,]\d+)?)$/)
+    if (faixa) { opcoes.inicio = parseFloat(faixa[1].replace(',', '.')); opcoes.fim = parseFloat(faixa[2].replace(',', '.')) }
+    else if (/^(ajustar|inteiro)$/i.test(t)) opcoes.modo = 'ajustar'
+    else resto.push(t)
+  }
+  const arg = resto.join(' ')
 
   if (arg === 'lista') {
     await fs.mkdir(MEMES_DIR, { recursive: true })
-    const nomes = [...new Set((await fs.readdir(MEMES_DIR)).map((f) => path.parse(f).name))].sort()
+    const nomes = [...new Set((await fs.readdir(MEMES_DIR)).filter((f) => !f.startsWith('.')).map((f) => path.parse(f).name))].sort()
     await sock.sendMessage(jid, { text: nomes.length ? '🔊 memes:\n' + nomes.join('\n') : `pasta ${MEMES_DIR}/ vazia` })
     return
   }
 
-  console.log(`\n🎬 !som ${arg || '(resposta a vídeo)'} → ${jid}`)
+  const desc = [arg || '(resposta a vídeo)', opcoes.modo, opcoes.fim ? `${opcoes.inicio}-${opcoes.fim}s` : ''].filter(Boolean).join(' ')
+  console.log(`\n🎬 !som ${desc} → ${jid}`)
   try {
     let webp, ogg
     const citada = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage
@@ -185,10 +195,10 @@ async function tratarComando(sock, msg) {
       for await (const p of stream) partes.push(p)
       const tmp = path.join(os.tmpdir(), `citado_${Date.now()}.mp4`)
       await fs.writeFile(tmp, Buffer.concat(partes))
-      webp = await paraWebp(tmp)
-      ogg = await paraOgg(tmp)
+      webp = await paraWebp(tmp, opcoes)
+      ogg = await paraOgg(tmp, opcoes)
     } else if (arg) {
-      ;({ webp, ogg } = await carregarMeme(arg))
+      ;({ webp, ogg } = await carregarMeme(arg, opcoes))
     } else {
       throw new Error('uso: "!som nome" ou responda um vídeo com "!som"')
     }

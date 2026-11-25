@@ -70,12 +70,28 @@ async function ffmpeg(args) {
   await run('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...args], { maxBuffer: 1 << 26 })
 }
 
-export async function paraWebp(entrada) {
+// Trecho do vídeo: { inicio, fim } em segundos (opcional). Sempre limitado a LIMITE_SEG.
+function argsTrecho({ inicio, fim } = {}) {
+  const args = []
+  if (inicio > 0) args.push('-ss', String(inicio))
+  const dur = fim > (inicio || 0) ? Math.min(fim - (inicio || 0), LIMITE_SEG) : LIMITE_SEG
+  args.push('-t', String(dur))
+  return args
+}
+
+const FILTRO = {
+  // padrão: preenche o quadrado e corta as sobras (centro do vídeo)
+  cortar: 'fps=15,scale=512:512:force_original_aspect_ratio=increase,crop=512:512,format=rgba',
+  // "ajustar": vídeo inteiro dentro do quadrado, sobras transparentes
+  ajustar: 'fps=15,scale=512:512:force_original_aspect_ratio=decrease,format=rgba,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=0x00000000',
+}
+
+export async function paraWebp(entrada, { modo = 'cortar', ...trecho } = {}) {
   const saida = path.join(os.tmpdir(), `fig_${Date.now()}.webp`)
   for (const q of [70, 50, 35, 20]) {
     await ffmpeg([
-      '-i', entrada, '-t', String(LIMITE_SEG), '-an',
-      '-vf', 'fps=15,scale=512:512:force_original_aspect_ratio=decrease,format=rgba,pad=512:512:(ow-iw)/2:(oh-ih)/2:color=0x00000000',
+      ...argsTrecho(trecho), '-i', entrada, '-an',
+      '-vf', FILTRO[modo] || FILTRO.cortar,
       '-c:v', 'libwebp', '-lossless', '0', '-q:v', String(q), '-loop', '0', '-preset', 'picture',
       saida,
     ])
@@ -86,9 +102,9 @@ export async function paraWebp(entrada) {
   return fs.readFile(saida)
 }
 
-export async function paraOgg(entrada) {
+export async function paraOgg(entrada, trecho = {}) {
   const saida = path.join(os.tmpdir(), `som_${Date.now()}.ogg`)
-  await ffmpeg(['-i', entrada, '-vn', '-t', String(LIMITE_SEG), '-ac', '1', '-ar', '48000', '-c:a', 'libopus', '-b:a', '64k', saida])
+  await ffmpeg([...argsTrecho(trecho), '-i', entrada, '-vn', '-ac', '1', '-ar', '48000', '-c:a', 'libopus', '-b:a', '64k', saida])
   return fs.readFile(saida)
 }
 
