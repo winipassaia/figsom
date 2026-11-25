@@ -35,7 +35,7 @@ Por padrão o bot só aceita comandos na conversa "Você", não guarda mensagens
 ## Instalação
 
 ```bash
-git clone https://github.com/<usuario>/figsom.git
+git clone https://github.com/winipassaia/figsom.git
 cd figsom
 npm install
 npm start
