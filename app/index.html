@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; img-src 'self' data:; style-src 'self'; font-src 'self'; script-src 'self'">
+  <title>figsom</title>
+  <link rel="stylesheet" href="estilo.css">
+</head>
+<body>
+  <!-- primeira vez: aviso -->
+  <section id="aviso" class="aviso" hidden>
+    <div class="aviso-cartao">
+      <img src="icone.png" alt="" class="aviso-icone">
+      <h1>Antes de começar</h1>
+      <p>O figsom cria figurinhas com som a partir dos seus vídeos e envia pelo seu WhatsApp. Pra isso, ele se conecta à sua conta como um <strong>aparelho vinculado</strong>, igual ao WhatsApp Web.</p>
+      <ul>
+        <li>É um projeto <strong>não oficial</strong>, sem ligação com o WhatsApp ou a Meta.</li>
+        <li>Usar clientes não oficiais viola os termos do WhatsApp e <strong>pode levar ao banimento da conta</strong>. Pra uso pessoal o risco é baixo, mas existe.</li>
+        <li>O figsom só obedece comandos que <strong>você</strong> manda na conversa com você mesmo, e não guarda suas mensagens.</li>
+        <li>Se puder, use um número secundário. E nunca use pra mandar mensagens em massa.</li>
+      </ul>
+      <div class="aviso-acoes">
+        <button id="btn-aceitar" class="btn btn-primario">Entendi, quero continuar</button>
+        <button class="btn btn-link" data-link="https://github.com/winipassaia/figsom">Ver o projeto no GitHub</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- tela principal -->
+  <div id="app" class="app" hidden>
+    <header class="topo">
+      <div class="marca">
+        <img src="icone.png" alt="" class="marca-icone">
+        <span class="marca-nome">figsom</span>
+      </div>
+      <div id="status" class="status" data-status="parado">
+        <span class="status-ponto"></span>
+        <span id="status-texto">Desconectado</span>
+      </div>
+    </header>
+
+    <main class="corpo">
+      <section class="palco" aria-live="polite">
+        <div id="palco-conteudo"></div>
+      </section>
+
+      <aside class="guia">
+        <h2>Como usar</h2>
+        <ol class="passos">
+          <li><strong>Abra a conversa com você mesmo</strong><span>Nova conversa → seu próprio contato (Você).</span></li>
+          <li><strong>Mande um vídeo curto</strong><span>Até 10 segundos. Quadrado ou vertical fica melhor.</span></li>
+          <li><strong>Responda o vídeo com <code>!som</code></strong><span>Segure o vídeo → Responder → envie <code>!som</code>.</span></li>
+          <li><strong>Salve e use</strong><span>Toque na figurinha → Adicionar às figurinhas. Envie pelo teclado: encaminhar perde o som.</span></li>
+        </ol>
+
+        <h3>Variações</h3>
+        <dl class="variacoes">
+          <dt><code>!som ajustar</code></dt><dd>vídeo inteiro, sem cortar as bordas</dd>
+          <dt><code>!som 2-6</code></dt><dd>só do segundo 2 ao 6</dd>
+          <dt><code>!som nome</code></dt><dd>usa um arquivo da pasta de memes</dd>
+          <dt><code>!som lista</code></dt><dd>mostra os memes da pasta</dd>
+        </dl>
+      </aside>
+
+      <section class="atividade">
+        <div class="atividade-topo">
+          <h2>Atividade</h2>
+          <span class="atividade-dica">o que o figsom está fazendo agora</span>
+        </div>
+        <ol id="log" class="log"></ol>
+      </section>
+    </main>
+
+    <footer class="rodape">
+      <button id="btn-memes" class="btn btn-sec">Abrir pasta de memes</button>
+      <label class="chave">
+        <input type="checkbox" id="chk-apagar">
+        <span class="chave-trilho"></span>
+        <span>Apagar o <code>!som</code> depois de enviar</span>
+      </label>
+      <span class="rodape-espaco"></span>
+      <button id="btn-desconectar" class="btn btn-perigo" hidden>Desconectar conta</button>
+      <span id="versao" class="versao"></span>
+    </footer>
+  </div>
+
+  <script src="tela.js"></script>
+</body>
+</html>

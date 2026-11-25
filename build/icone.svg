@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <filter id="sombra" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#22193A" flood-opacity="0.28"/>
+    </filter>
+  </defs>
+  <g transform="rotate(-7 256 256)" filter="url(#sombra)">
+    <!-- recorte branco do adesivo -->
+    <path d="M110 70 H402 Q442 70 442 110 V330 L330 442 H110 Q70 442 70 402 V110 Q70 70 110 70 Z" fill="#FFFFFF"/>
+    <!-- corpo rosa -->
+    <path d="M122 96 H390 Q416 96 416 122 V318 L318 416 H122 Q96 416 96 390 V122 Q96 96 122 96 Z" fill="#FF4F86"/>
+    <!-- ondas de som -->
+    <g fill="#FFFFFF">
+      <rect x="146" y="214" width="34" height="84" rx="17"/>
+      <rect x="198" y="160" width="34" height="192" rx="17"/>
+      <rect x="250" y="190" width="34" height="132" rx="17"/>
+      <rect x="302" y="226" width="34" height="60" rx="17"/>
+    </g>
+    <!-- ponta descolando -->
+    <path d="M442 330 L330 442 Q336 362 362 350 Q380 338 442 330 Z" fill="#E7E1F3"/>
+    <path d="M442 330 L330 442 Q336 362 362 350 Q380 338 442 330 Z" fill="none" stroke="#D6CEE8" stroke-width="2"/>
+  </g>
+</svg>

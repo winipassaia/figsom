@@ -23,7 +23,7 @@ if errorlevel 1 (
 )
 if not exist node_modules (
   echo Instalando dependencias, so na primeira vez...
-  call npm install
+  call npm install --omit=dev
 )
 call npm start
 pause

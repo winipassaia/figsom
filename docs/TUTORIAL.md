@@ -1,164 +1,106 @@
-# Tutorial: instalação e uso do figsom
+# Tutorial: como usar o figsom
 
-Guia pra quem nunca usou terminal. Leva uns 10 minutos. A instalação aqui é pro **Windows**. **No Linux, siga o [guia de Linux](LINUX.md)** e depois volte pra [Parte 3](#parte-3-criar-figurinhas-com-som).
+Guia pra quem só quer baixar e usar: não precisa instalar Node.js, ffmpeg nem abrir terminal. Leva uns 5 minutos.
+
+> Prefere rodar pelo terminal? Veja o [modo terminal no Windows](TERMINAL.md) ou [no Linux](LINUX.md).
 
 > [!WARNING]
-> O figsom é **não oficial** e conecta no seu WhatsApp como um aparelho vinculado. Isso viola os termos do WhatsApp e **pode causar banimento**. O risco é baixo pra uso pessoal, mas existe. Se puder, use um número secundário. Leia a seção [Dicas de segurança](../README.md#dicas-de-segurança).
+> O figsom é **não oficial** e se conecta ao seu WhatsApp como um aparelho vinculado. Isso viola os termos do WhatsApp e **pode causar banimento**. O risco é baixo pra uso pessoal, mas existe. Se puder, use um número secundário.
 
 ---
 
-## Parte 1: Instalação (só na primeira vez)
+## Parte 1: Instalar
 
-### 1. Instale o Node.js
+### Windows
 
-1. Acesse **https://nodejs.org** e baixe a versão **LTS**.
-2. Instale com as opções padrão (Avançar, Avançar, Concluir).
-3. Pra conferir, abra o **Prompt de Comando** (tecla Windows, digite `cmd`, Enter) e rode:
+1. Abra a página de **[Releases](https://github.com/winipassaia/figsom/releases/latest)**.
+2. Baixe o **`figsom-…-instalador-windows.exe`**.
+3. Abra o arquivo. Se aparecer **"O Windows protegeu o computador"**, clique em **Mais informações** e depois em **Executar assim mesmo**.
+   > O aviso aparece porque o figsom não tem assinatura digital, um certificado pago. O código está todo aberto no GitHub.
+4. Siga o instalador. No fim, o figsom abre sozinho e ganha um atalho no menu Iniciar.
+
+> Não quer instalar? Baixe o **`figsom-…-portatil-windows.exe`** e abra direto. Ele demora alguns segundos a mais pra abrir.
+
+### Linux
+
+1. Na página de **[Releases](https://github.com/winipassaia/figsom/releases/latest)**, baixe o **`figsom-…-linux.AppImage`**.
+2. Dê permissão de execução: botão direito → Propriedades → Permissões → "Permitir executar como programa", ou no terminal:
+   ```bash
+   chmod +x figsom-*-linux.AppImage
    ```
-   node -v
-   ```
-   Tem que aparecer `v20` ou maior, por exemplo `v22.11.0`.
+3. Abra com dois cliques.
 
-### 2. Instale o ffmpeg
-
-O ffmpeg converte o vídeo em figurinha e o áudio em OGG.
-
-- **Windows:** no Prompt de Comando, rode:
-  ```
-  winget install ffmpeg
-  ```
-  Depois **feche e abra o Prompt de novo**. Isso é obrigatório pro comando ser reconhecido.
-- **Ubuntu/Debian:** `sudo apt install ffmpeg`
-- **macOS:** `brew install ffmpeg`
-
-Pra conferir:
-```
-ffmpeg -version
-```
-Tem que aparecer um texto começando com `ffmpeg version ...`.
-
-### 3. Baixe o figsom
-
-**Jeito fácil:** na página do projeto no GitHub, clique no botão verde **Code**, depois em **Download ZIP**, e extraia numa pasta fácil de achar, por exemplo `Documentos\figsom`.
-
-**Com git:**
-```
-git clone https://github.com/winipassaia/figsom.git
-```
-
-> [!TIP]
-> **Atalho:** depois de instalar o Node.js e o ffmpeg e de extrair o ZIP, você pode só dar **dois cliques no `iniciar.bat`** dentro da pasta. Ele confere tudo, instala as dependências na primeira vez e liga o bot. Com isso, os passos 4 a 6 viram um clique só.
-
-### 4. Abra o terminal dentro da pasta
-
-- **Windows:** abra a pasta `figsom` no Explorador de Arquivos, clique na **barra de endereço**, apague o que estiver escrito, digite `cmd` e aperte Enter. O Prompt abre já dentro da pasta.
-- **Linux/macOS:** `cd caminho/para/figsom`
-
-### 5. Instale as dependências
-
-```
-npm install
-```
-Espere terminar. Pode levar 1 ou 2 minutos, e avisos (`warn`) são normais.
+> Em algumas distros o AppImage pede o pacote `libfuse2`: `sudo apt install libfuse2`.
 
 ---
 
 ## Parte 2: Conectar no WhatsApp
 
-### 6. Ligue o bot
+![Tela do QR code](img/qr.png)
 
-```
-npm start
-```
-Vai aparecer um **QR code** no terminal.
+1. Na primeira vez, o figsom mostra um **aviso** explicando os riscos. Leia e clique em **Entendi, quero continuar**.
+2. Aparece um **QR code**.
+3. No celular, abra o WhatsApp, toque em **⋮ (Mais opções)**, depois em **Aparelhos conectados** e em **Conectar um aparelho**.
+4. Aponte a câmera pro QR na tela do computador.
 
-> Se o QR aparecer quebrado ou cortado, aumente a janela do terminal ou diminua a fonte (Ctrl + scroll do mouse).
+Quando conectar, aparece **"Tudo pronto!"** e o selo no canto fica verde: **Conectado**.
 
-### 7. Escaneie o QR
-
-No celular:
-
-1. Abra o WhatsApp.
-2. Toque nos **três pontinhos (⋮)** e depois em **Aparelhos conectados**.
-3. Toque em **Conectar um aparelho**.
-4. Aponte a câmera pro QR no terminal.
-
-Quando conectar, o terminal mostra:
-```
-✅ Conectado — comandos só na conversa "Você". ...
-```
-
-Da próxima vez que rodar `npm start`, **não precisa escanear de novo**. A sessão fica salva na pasta `auth/`.
-
-> [!CAUTION]
-> A pasta `auth/` dá acesso total ao seu WhatsApp. **Nunca mande ela pra ninguém.**
+Nas próximas vezes, é só abrir o figsom, que ele conecta sozinho, sem QR.
 
 ---
 
 ## Parte 3: Criar figurinhas com som
 
-### 8. Abra a conversa com você mesmo
+![Tela conectada, com a atividade](img/conectado.png)
 
-No WhatsApp, toque em **Nova conversa** (o ícone de mensagem) e escolha **o seu próprio contato**, que aparece no topo como **"(Você)"** ou **"Mensagem para você"**.
+### 1. Abra a conversa com você mesmo
 
-O bot **só obedece comandos nessa conversa**.
+No WhatsApp, toque em **Nova conversa** e escolha **o seu próprio contato**, que aparece como **"(Você)"** ou **"Mensagem para você"**.
 
-### 9. Mande um vídeo e responda com `!som`
+O figsom **só obedece comandos nessa conversa**.
 
-1. Envie um vídeo nessa conversa. Vídeos curtos funcionam melhor; o bot usa no máximo **10 segundos**.
+### 2. Mande um vídeo e responda com `!som`
+
+1. Envie um vídeo curto nessa conversa. O figsom usa no máximo **10 segundos**.
 2. **Segure o dedo no vídeo** e toque em **Responder**.
-3. Escreva:
-   ```
-   !som
-   ```
-4. Envie e espere alguns segundos.
+3. Escreva `!som` e envie.
 
-No terminal aparece:
-```
-🎬 !som (resposta a vídeo) → ...
-   ✅ enviada (574 KB, 10s)
-```
-A **figurinha com som** chega na conversa, com um ícone de áudio. A mensagem `!som` é apagada sozinha.
+No figsom, o quadro **Atividade** mostra cada etapa: baixando, convertendo, enviando. Em alguns segundos a **figurinha com som** chega na conversa, com um ícone de áudio.
 
-### Opções do `!som`
+### 3. Salve e use
 
-Dá pra combinar opções em qualquer ordem:
+1. Toque na figurinha.
+2. Toque em **Adicionar às figurinhas** (ou na ⭐).
+3. Pronto: ela fica no seu **teclado de figurinhas** pra mandar em qualquer conversa.
+
+> [!IMPORTANT]
+> **Não encaminhe a figurinha**, porque encaminhar perde o som. Mande sempre pelo teclado de figurinhas.
+
+### Variações do `!som`
 
 | Comando | Resultado |
 |---|---|
 | `!som` | Figurinha **quadrada**, cortando o **centro** do vídeo (padrão) |
 | `!som ajustar` | Vídeo **inteiro** dentro do quadrado, com bordas transparentes |
-| `!som 2-6` | Usa só do segundo **2** ao **6** (imagem e som) |
-| `!som 1,5-4 ajustar` | Trecho de 1,5 s a 4 s, com o vídeo inteiro |
+| `!som 2-6` | Usa só do segundo **2** ao **6** |
+| `!som 1,5-4 ajustar` | Dá pra combinar |
 
-O limite é de **10 segundos**. Se o trecho for maior, ele é cortado nos 10 s.
+### Pasta de memes
 
-### 10. Salve e use
+O botão **Abrir pasta de memes** abre `Documentos/figsom/memes`. Coloque arquivos lá e use pelo nome, sem precisar mandar o vídeo pelo WhatsApp:
 
-1. Toque na figurinha que chegou.
-2. Toque em **Adicionar às figurinhas** (ou na ⭐ pra favoritar).
-3. Pronto: ela aparece no seu **teclado de figurinhas** e você pode mandar em qualquer conversa.
+| Arquivos na pasta | Comando |
+|---|---|
+| `tome.mp4` | `!som tome` |
+| `gato.gif` + `gato.mp3` | `!som gato` (GIF com o som do mp3) |
+| `pronta.webp` + `pronta.ogg` | `!som pronta` |
 
-> [!IMPORTANT]
-> **Não encaminhe a figurinha**, porque encaminhar perde o som. Mande sempre pelo teclado de figurinhas.
+As variações também funcionam aqui: `!som tome 3-7 ajustar`. `!som lista` manda a lista dos memes da pasta.
 
-### 11. (Opcional) Use a pasta `memes/`
+### Desligar e desconectar
 
-Pra criar sem mandar o vídeo pelo WhatsApp, coloque os arquivos na pasta `memes/` do figsom:
-
-| Arquivos na pasta | Comando | Resultado |
-|---|---|---|
-| `tome.mp4` | `!som tome` | Vídeo + áudio do próprio vídeo |
-| `gato.gif` + `gato.mp3` | `!som gato` | GIF com o áudio do mp3 |
-| `pronta.webp` + `pronta.ogg` | `!som pronta` | Figurinha que você já tem + som |
-
-As opções também funcionam aqui: `!som tome 3-7`, `!som gato ajustar`. `!som lista` mostra tudo que tem na pasta.
-
-### 12. Desligue quando terminar
-
-No terminal, aperte **Ctrl + C**.
-
-Pra desconectar de vez: no celular, vá em **Aparelhos conectados**, toque no aparelho do bot e depois em **Desconectar**.
+- **Fechar a janela** desliga o figsom. Ele não fica rodando escondido.
+- **Desconectar conta**, no canto de baixo, remove o figsom dos aparelhos conectados e apaga a sessão do computador.
 
 ---
 
@@ -166,23 +108,20 @@ Pra desconectar de vez: no celular, vá em **Aparelhos conectados**, toque no ap
 
 | Problema | Solução |
 |---|---|
-| `'node' não é reconhecido...` | O Node.js não foi instalado, ou o Prompt foi aberto antes da instalação. Feche e abra o Prompt de novo. |
-| `spawn ffmpeg ENOENT` ou `instala o ffmpeg` | O ffmpeg não está instalado ou o terminal não foi reaberto. Volte ao passo 2. |
-| O QR expirou | Ele se renova sozinho. Se não renovar, aperte Ctrl + C e rode `npm start` de novo. |
-| `Deslogado. Apaga a pasta auth/` | Você desconectou pelo celular. Apague a pasta `auth/` e escaneie de novo. |
-| `!som` não faz nada | Confira se está na conversa **"Você"** e se **respondeu** o vídeo (segurar e Responder). |
-| A figurinha cortou uma parte importante | Use `!som ajustar` pra manter o vídeo inteiro. |
+| "O Windows protegeu o computador" | **Mais informações** → **Executar assim mesmo**. |
+| O QR não aparece e fica em "Conectando…" | Confira sua internet. A Atividade mostra se ele está tentando de novo. |
+| `!som` não faz nada | Confira se está na conversa **"Você"** e se **respondeu** o vídeo (segurar → Responder). |
 | A figurinha chegou sem som | Ela foi encaminhada. Mande pelo teclado de figurinhas. |
-| `Conexão caiu, reconectando...` | É normal de vez em quando. Ele reconecta sozinho. |
+| A figurinha cortou uma parte importante | Use `!som ajustar`. |
+| Desconectei pelo celular | Abra o figsom de novo e escaneie o novo QR. |
+| AppImage não abre no Linux | `chmod +x` no arquivo e, se pedir, `sudo apt install libfuse2`. |
 
----
+## Onde ficam os dados
 
-## Atualizar
+| | Windows | Linux |
+|---|---|---|
+| Sessão do WhatsApp | `%APPDATA%\figsom\auth` | `~/.config/figsom/auth` |
+| Pasta de memes | `Documentos\figsom\memes` | `~/Documentos/figsom/memes` (ou `~/Documents`) |
 
-- **ZIP:** baixe de novo e substitua os arquivos, **mas mantenha a pasta `auth/`** (e a `memes/`, se usar). Depois rode `npm install`.
-- **git:** `git pull` e depois `npm install`.
-
-## Desinstalar
-
-1. No celular, desconecte o aparelho em **Aparelhos conectados**.
-2. Apague a pasta do figsom.
+> [!CAUTION]
+> A pasta `auth` dá acesso total ao seu WhatsApp. Nunca compartilhe. Pra apagar, use **Desconectar conta**.

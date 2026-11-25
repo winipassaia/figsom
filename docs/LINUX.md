@@ -1,6 +1,8 @@
-# figsom no Linux
+# Modo terminal no Linux
 
-Guia de instalação pra **Ubuntu/Debian** (e derivados: Mint, Pop!_OS, Zorin...). No fim tem a variação pra Fedora e Arch. O uso no WhatsApp é igual em qualquer sistema: veja a [Parte 3 do tutorial](TUTORIAL.md#parte-3-criar-figurinhas-com-som).
+Guia pra rodar o figsom pelo código-fonte no **Ubuntu/Debian** (e derivados: Mint, Pop!_OS, Zorin...). No fim tem a variação pra Fedora e Arch. O uso no WhatsApp é igual em qualquer sistema: veja a [Parte 3 do tutorial](TUTORIAL.md#parte-3-criar-figurinhas-com-som).
+
+> Só quer usar? Baixe o **AppImage** na página de [Releases](https://github.com/winipassaia/figsom/releases/latest). Ele já vem com tudo e tem janela. Veja o [tutorial](TUTORIAL.md#linux).
 
 > [!WARNING]
 > O figsom é **não oficial** e conecta no seu WhatsApp como um aparelho vinculado. Isso viola os termos do WhatsApp e **pode causar banimento**. O risco é baixo pra uso pessoal, mas existe. Leia as [Dicas de segurança](../README.md#dicas-de-segurança).
@@ -46,12 +48,12 @@ cd figsom
 
 O script:
 - confere se o Node.js 20+ e o ffmpeg estão instalados;
-- roda `npm install` na primeira vez;
+- roda `npm install --omit=dev` na primeira vez;
 - inicia o bot.
 
 > Se aparecer `Permissão negada`, rode `chmod +x iniciar.sh` uma vez, ou use `bash iniciar.sh`.
 
-Prefere fazer na mão? É o mesmo que `npm install` seguido de `npm start`.
+Prefere fazer na mão? É o mesmo que `npm install --omit=dev` seguido de `npm start`.
 
 ## 5. Escaneie o QR
 

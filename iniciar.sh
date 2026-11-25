@@ -18,6 +18,6 @@ if ! ffmpeg -hide_banner -encoders 2>/dev/null | grep -q libwebp; then
 fi
 if [ ! -d node_modules ]; then
   echo "📦 Instalando dependências (só na primeira vez)..."
-  npm install
+  npm install --omit=dev
 fi
 exec npm start

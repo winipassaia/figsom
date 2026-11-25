@@ -5,7 +5,8 @@ import { proto, downloadContentFromMessage } from 'baileys'
 import fs from 'node:fs'
 import path from 'node:path'
 
-const RAW_DIR = path.join('dumps', 'raw')
+let DUMP_DIR = 'dumps'
+let log = (...a) => console.log(...a)
 
 // ---------- decodificador protobuf cru ----------
 function lerVarint(buf, pos) {
@@ -76,7 +77,10 @@ export function imprimir(campos, ind = '') {
 // ---------- gancho no proto.Message.decode ----------
 const IGNORAR = new Set(['messageContextInfo', 'senderKeyDistributionMessage', 'protocolMessage', 'reactionMessage', 'deviceSentMessage'])
 
-export function instalarGancho() {
+export function instalarGancho(dumpDir = 'dumps', logFn) {
+  DUMP_DIR = dumpDir
+  if (logFn) log = logFn
+  const RAW_DIR = path.join(DUMP_DIR, 'raw')
   fs.mkdirSync(RAW_DIR, { recursive: true })
   const original = proto.Message.decode
   proto.Message.decode = function (entrada, ...resto) {
@@ -95,12 +99,12 @@ export function instalarGancho() {
         fs.writeFileSync(base + '.bin', buf)
         const arvore = decodeRaw(buf)
         fs.writeFileSync(base + '.txt', arvore ? imprimir(arvore) : '(não decodificou)')
-        console.log(`\n🧬 bytes crus (${buf.length} B) → ${base}.txt  ${vazia ? '⚠ tipo DESCONHECIDO pro Baileys!' : ''}`)
+        log(`🧬 bytes crus (${buf.length} B) → ${base}.txt  ${vazia ? '⚠ tipo DESCONHECIDO pro Baileys!' : ''}`)
         const figSom = extrairFigSom(buf)
-        if (figSom) baixarFigSom(figSom, stamp).catch((e) => console.error('   ✖ download falhou:', e.message))
+        if (figSom) baixarFigSom(figSom, stamp).catch((e) => log(`   ✖ download falhou: ${e.message}`))
       }
     } catch (e) {
-      console.error('gancho raw falhou:', e.message)
+      log(`gancho raw falhou: ${e.message}`)
     }
     return msg
   }
@@ -152,21 +156,21 @@ async function baixar(midia, tipo) {
 }
 
 async function baixarFigSom({ sticker, audio }, stamp) {
-  const pasta = path.join('dumps', 'figsom', stamp)
+  const pasta = path.join(DUMP_DIR, 'figsom', stamp)
   fs.mkdirSync(pasta, { recursive: true })
-  console.log(`🔊 FIGURINHA COM SOM! áudio ${audio?.seconds ?? '?'}s (${audio?.mimetype})`)
+  log(`🔊 FIGURINHA COM SOM! áudio ${audio?.seconds ?? '?'}s (${audio?.mimetype})`)
   const webp = await baixar(sticker, 'sticker')
   fs.writeFileSync(path.join(pasta, 'fig.webp'), webp)
-  console.log(`   ⬇ fig.webp (${webp.length} B)`)
+  log(`   ⬇ fig.webp (${webp.length} B)`)
   if (audio) {
     const ogg = await baixar(audio, 'audio')
     fs.writeFileSync(path.join(pasta, 'som.ogg'), ogg)
-    console.log(`   ⬇ som.ogg (${ogg.length} B)`)
+    log(`   ⬇ som.ogg (${ogg.length} B)`)
   }
   const info = {
     sticker: { mimetype: sticker.mimetype, width: sticker.width, height: sticker.height, isAnimated: sticker.isAnimated, fileLength: Number(sticker.fileLength), firstFrameLength: sticker.firstFrameLength },
     audio: audio && { mimetype: audio.mimetype, seconds: audio.seconds, ptt: audio.ptt, fileLength: Number(audio.fileLength), temWaveform: !!audio.waveform?.length },
   }
   fs.writeFileSync(path.join(pasta, 'info.json'), JSON.stringify(info, null, 2))
-  console.log(`   💾 ${pasta}/`)
+  log(`   💾 ${pasta}`)
 }

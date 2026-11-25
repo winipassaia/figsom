@@ -10,6 +10,10 @@ import os from 'node:os'
 import path from 'node:path'
 
 const run = promisify(execFile)
+let FFMPEG = 'ffmpeg'
+export function definirFfmpeg(caminho) {
+  if (caminho) FFMPEG = caminho
+}
 export const SOM = Symbol('figSom')
 const LIMITE_SEG = 10 // maior duração vista nas figurinhas oficiais
 const LIMITE_WEBP = 1_000_000 // as oficiais chegaram a ~950 KB
@@ -67,7 +71,7 @@ function webpInfo(buf) {
 }
 
 async function ffmpeg(args) {
-  await run('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', ...args], { maxBuffer: 1 << 26 })
+  await run(FFMPEG, ['-hide_banner', '-loglevel', 'error', '-y', ...args], { maxBuffer: 1 << 26, windowsHide: true })
 }
 
 // Trecho do vídeo: { inicio, fim } em segundos (opcional). Sempre limitado a LIMITE_SEG.

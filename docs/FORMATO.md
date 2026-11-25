@@ -62,11 +62,11 @@ O Baileys (7.0.0-rc14) gera o código protobuf a partir de um `.proto` que ainda
 
 ## Como o figsom resolve
 
-### Receber (`raw.js`, modo `CAPTURAR`)
+### Receber (`src/raw.js`, modo `capturar`)
 
 Envolve `proto.Message.decode`: guarda os bytes crus de toda mensagem de topo antes de decodificar, procura o caminho `134 → 1 → 26 → 26` direto nos bytes e decodifica os pedaços com `StickerMessage.decode` e `AudioMessage.decode`.
 
-### Enviar (`enviar.js`)
+### Enviar (`src/enviar.js`)
 
 1. Faz o upload do WebP (`prepareWAMessageMedia({ sticker })`) e do OGG (`prepareWAMessageMedia({ audio, seconds })`).
 2. Monta um objeto de mensagem cujo `stickerMessage` fica **no protótipo**. Assim o Baileys enxerga a mensagem como sticker (`mediatype="sticker"`), mas o `encode` não o escreve no topo, porque só codifica propriedades próprias.
@@ -75,7 +75,7 @@ Envolve `proto.Message.decode`: guarda os bytes crus de toda mensagem de topo an
 
 ## Como investigar você mesmo
 
-1. Ponha `CAPTURAR = true` e `SO_CONVERSA_COMIGO = false` no `index.js`.
+1. No modo terminal, ponha `capturar: true` e `soConversaComigo: false` no `index.js`.
 2. Receba uma figurinha com som (enviada direto, não encaminhada).
 3. Veja `dumps/raw/*.txt`: a árvore de campos sem nomes, no estilo de `protoc --decode_raw`.
 4. Veja `dumps/figsom/*/`: o `fig.webp` e o `som.ogg` já descriptografados.
