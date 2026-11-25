@@ -8,6 +8,7 @@ const TEXTO_STATUS = {
   'aguardando-qr': 'Esperando o QR',
   conectado: 'Conectado',
   reconectando: 'Reconectando…',
+  pausado: 'Pausado',
   deslogado: 'Desconectado',
 }
 
@@ -53,6 +54,15 @@ function renderPalco(e) {
       el('h1', {}, e.status === 'iniciando' ? 'Conectando ao WhatsApp…' : 'Reconectando…'),
       el('p', {}, 'Isso leva só alguns segundos.'),
     )
+  } else if (e.status === 'pausado') {
+    palco.append(
+      adesivoSom('calmo'),
+      el('h1', {}, 'Pausado'),
+      el('p', { class: 'instrucao' },
+        'O figsom não está atendendo o ', el('code', {}, '!som'), ' agora. Sua conta ', el('b', {}, 'continua conectada'),
+        ': pra voltar, é só retomar, sem QR. Um ', el('code', {}, '!som'), ' mandado enquanto está pausado é atendido quando você retomar.'),
+      el('button', { class: 'btn btn-primario', onclick: () => api.conectar() }, 'Retomar'),
+    )
   } else {
     palco.append(
       adesivoSom('calmo'),
@@ -68,6 +78,9 @@ function renderEstado(e) {
   pill.dataset.status = e.status
   $('#status-texto').textContent = TEXTO_STATUS[e.status] || e.status // sem número de telefone: a tela pode aparecer em vídeos
   $('#chk-apagar').checked = !!e.config?.apagarComando
+  // Pausar: só faz sentido com a conta já vinculada. Desconectar fica escondido quando pausado
+  // (sem conexão não dá pra avisar o WhatsApp; a tela de pausado explica: retomar e depois desconectar).
+  $('#btn-pausar').hidden = !['conectado', 'reconectando'].includes(e.status)
   $('#btn-desconectar').hidden = !['conectado', 'aguardando-qr', 'reconectando'].includes(e.status)
   $('#versao').textContent = e.versao ? `v${e.versao}` : ''
   renderPalco(e)
@@ -94,6 +107,7 @@ $('#btn-aceitar').addEventListener('click', async () => {
   renderEstado(await api.aceitarAviso())
 })
 $('#btn-memes').addEventListener('click', () => api.abrirMemes())
+$('#btn-pausar').addEventListener('click', () => api.pausar())
 $('#chk-apagar').addEventListener('change', (ev) => api.config({ apagarComando: ev.target.checked }))
 document.querySelectorAll('[data-link]').forEach((b) => b.addEventListener('click', () => api.abrirLink(b.dataset.link)))
 

@@ -40,13 +40,15 @@ Escaneie o QR que aparece no terminal: **WhatsApp → ⋮ → Aparelhos conectad
 
 > Se o QR aparecer quebrado, aumente a janela do terminal ou diminua a fonte (Ctrl + scroll).
 
-A sessão fica salva na pasta `auth/`, ao lado do código. **Nunca compartilhe essa pasta.**
+A sessão fica salva na pasta `auth/`, ao lado do código. **Nunca compartilhe essa pasta**, e não deixe o projeto dentro de pastas sincronizadas (OneDrive, Dropbox, Syncthing...) sem excluir a `auth/` da sincronização.
+
+> Não rode o modo terminal e o app ao mesmo tempo com a **mesma** sessão. Cada um usa a sua pasta (o app guarda a dele em `%APPDATA%\figsom\auth`), então cada um aparece como um aparelho conectado separado.
 
 ## 5. Use
 
 Igual ao app: veja a [Parte 3 do tutorial](TUTORIAL.md#parte-3-criar-figurinhas-com-som). No modo terminal, a pasta de memes é a `memes/` dentro do projeto.
 
-Pra desligar, use **Ctrl + C**.
+Pra desligar, use **Ctrl + C**. É o mesmo que o botão **Pausar** do app: a sessão fica guardada e, da próxima vez, ele conecta sem QR. Pra desconectar a conta de vez, remova o aparelho no celular (**Aparelhos conectados**) e apague a pasta `auth/`.
 
 ## Configuração
 
@@ -58,7 +60,7 @@ No topo do `index.js`:
 | `authDir` | `auth` | Sessão do WhatsApp |
 | `apagarComando` | `true` | Apaga a mensagem `!som` depois de enviar |
 | `soConversaComigo` | `true` | Só aceita comandos na conversa "Você" |
-| `capturar` | `false` | Modo estudo: salva figurinhas com som **recebidas** em `dumps/`. Veja [FORMATO.md](FORMATO.md). |
+| `capturar` | `false` | Modo estudo: salva em `dumps/` as figurinhas **recebidas** de qualquer conversa, inclusive de outras pessoas. Veja [FORMATO.md](FORMATO.md). |
 
 ## Problemas comuns
 

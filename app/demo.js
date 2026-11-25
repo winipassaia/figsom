@@ -32,7 +32,11 @@ export async function rodarDemo({ janela, estado, enviar, publico, addLog, QRCod
   addLog({ nivel: 'erro', texto: '✖ Responda um VÍDEO com "!som" (segure o vídeo → Responder), ou use "!som nome".', hora: new Date() })
   await foto('3-conectado')
 
+  set({ status: 'pausado' })
+  addLog({ nivel: 'info', texto: '⏸️  Pausado. O figsom parou de atender o "!som", mas a conta continua conectada: clique em Retomar pra voltar, sem QR.', hora: new Date() })
+  await foto('4-pausado')
+
   set({ status: 'deslogado', conta: null })
-  await foto('4-desconectado')
+  await foto('5-desconectado')
   app.quit()
 }

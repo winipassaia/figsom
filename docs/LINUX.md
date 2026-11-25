@@ -5,7 +5,7 @@ Guia pra rodar o figsom pelo código-fonte no **Ubuntu/Debian** (e derivados: Mi
 > Só quer usar? Baixe o **AppImage** na página de [Releases](https://github.com/winipassaia/figsom/releases/latest). Ele já vem com tudo e tem janela. Veja o [tutorial](TUTORIAL.md#linux).
 
 > [!WARNING]
-> O figsom é **não oficial** e conecta no seu WhatsApp como um aparelho vinculado. Isso viola os termos do WhatsApp e **pode causar banimento**. O risco é baixo pra uso pessoal, mas existe. Leia as [Dicas de segurança](../README.md#dicas-de-segurança).
+> O figsom é **não oficial** e conecta no seu WhatsApp como um aparelho vinculado. Isso viola os termos do WhatsApp e **pode causar banimento**, mesmo em uso pessoal. Não dá pra medir esse risco. Leia as [Dicas de segurança](../README.md#dicas-de-segurança).
 
 ---
 

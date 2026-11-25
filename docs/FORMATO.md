@@ -64,7 +64,7 @@ O Baileys (7.0.0-rc14) gera o código protobuf a partir de um `.proto` que ainda
 
 ### Receber (`src/raw.js`, modo `capturar`)
 
-Envolve `proto.Message.decode`: guarda os bytes crus de toda mensagem de topo antes de decodificar, procura o caminho `134 → 1 → 26 → 26` direto nos bytes e decodifica os pedaços com `StickerMessage.decode` e `AudioMessage.decode`.
+Envolve `proto.Message.decode`: pega os bytes crus de cada mensagem de topo antes de decodificar e guarda os das que o Baileys deixa vazias ou que têm figurinha. Depois procura o caminho `134 → 1 → 26 → 26` direto nos bytes e decodifica os pedaços com `StickerMessage.decode` e `AudioMessage.decode`.
 
 ### Enviar (`src/enviar.js`)
 
@@ -72,13 +72,16 @@ Envolve `proto.Message.decode`: guarda os bytes crus de toda mensagem de topo an
 2. Monta um objeto de mensagem cujo `stickerMessage` fica **no protótipo**. Assim o Baileys enxerga a mensagem como sticker (`mediatype="sticker"`), mas o `encode` não o escreve no topo, porque só codifica propriedades próprias.
 3. Envolve `proto.Message.encode`: se a mensagem tiver o marcador, acrescenta à mão o campo 134 com `StickerMessage` + campo 26 (`AudioMessage`).
 4. Envia com `sock.relayMessage`. O gancho também funciona dentro do `deviceSentMessage` que vai pros seus outros aparelhos.
+5. Guarda o **próprio objeto** enviado (não uma cópia) pro `getMessage`: se algum aparelho pedir reenvio, o Baileys reaproveita o objeto e o gancho escreve o campo 134 de novo. Qualquer cópia (`fromObject`, JSON, `{...msg}`) perde o formato.
+
+O truque depende de detalhes internos do Baileys, por isso a versão fica fixa no `package.json`. Ao iniciar, o figsom confere o formato com um autoteste (`conferirFormato`) e desliga o envio se ele não sair certo. O `npm test` faz a mesma conferência, e o workflow de release roda os testes antes de empacotar.
 
 ## Como investigar você mesmo
 
-1. No modo terminal, ponha `capturar: true` e `soConversaComigo: false` no `index.js`.
+1. No modo terminal, ponha `capturar: true` no `index.js`. Não precisa mexer no `soConversaComigo`: a captura vale pra qualquer conversa, e deixar ele `true` evita que um `!som` digitado num grupo dispare.
 2. Receba uma figurinha com som (enviada direto, não encaminhada).
 3. Veja `dumps/raw/*.txt`: a árvore de campos sem nomes, no estilo de `protoc --decode_raw`.
 4. Veja `dumps/figsom/*/`: o `fig.webp` e o `som.ogg` já descriptografados.
 
 > [!CAUTION]
-> Os arquivos de `dumps/` contêm URLs e chaves de mídia reais. Não publique.
+> Os arquivos de `dumps/` contêm URLs e chaves de mídia reais, e figurinhas que **outras pessoas** te mandaram. Não publique, apague quando terminar e desligue o `capturar` depois.

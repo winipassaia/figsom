@@ -22,7 +22,9 @@ Mande um vídeo na conversa com você mesmo, responda com `!som`, e a figurinha 
 
 > [!WARNING]
 > **Projeto não oficial, use por sua conta e risco.**
-> O figsom se conecta ao WhatsApp como um aparelho vinculado usando o [Baileys](https://github.com/WhiskeySockets/Baileys), um cliente **não oficial**. Isso viola os Termos de Serviço do WhatsApp e **pode levar ao banimento da conta**. O uso pessoal e com pouco volume tem risco baixo, mas **não é zero**. Se possível, use um número secundário. Não use pra spam nem pra enviar em massa.
+> O figsom se conecta ao WhatsApp como um aparelho vinculado usando o [Baileys](https://github.com/WhiskeySockets/Baileys), um cliente **não oficial**. Isso viola os Termos de Serviço do WhatsApp e **pode levar ao banimento da conta**, mesmo em uso pessoal e com pouco volume. Não dá pra medir esse risco.
+> O formato da figurinha com som foi descoberto por engenharia reversa. Se a sua conta ainda não tem o recurso, você vai enviar algo que o WhatsApp ainda não liberou pra ela.
+> Se possível, use um número secundário. Não use pra spam nem pra enviar em massa.
 > Este projeto não tem nenhuma ligação com o WhatsApp ou a Meta.
 
 ---
@@ -34,9 +36,10 @@ Na página de **[Releases](https://github.com/winipassaia/figsom/releases/latest
 | Sistema | Arquivo |
 |---|---|
 | **Windows** | `figsom-…-instalador-windows.exe` (ou o `…-portatil-windows.exe`, que não instala) |
-| **Linux** | `figsom-…-linux.AppImage` |
+| **Ubuntu / Debian** | `figsom-…-linux.deb` |
+| **Outras distros Linux** | `figsom-…-linux.AppImage` |
 
-Já vem tudo dentro: não precisa instalar Node.js nem ffmpeg. Na primeira vez, o Windows mostra "O Windows protegeu o computador" porque o app não tem assinatura digital. Clique em **Mais informações → Executar assim mesmo**.
+Já vem tudo dentro: não precisa instalar Node.js nem ffmpeg. As somas SHA-256 de cada arquivo ficam no `SHA256SUMS.txt` da release. Na primeira vez, o Windows mostra "O Windows protegeu o computador" porque o app não tem assinatura digital. Clique em **Mais informações → Executar assim mesmo**.
 
 **Primeira vez?** Siga o **[tutorial passo a passo](docs/TUTORIAL.md)**.
 
@@ -51,7 +54,9 @@ Já vem tudo dentro: não precisa instalar Node.js nem ffmpeg. Na primeira vez, 
 > [!NOTE]
 > **Encaminhar a figurinha perde o áudio.** Use sempre a figurinha salva, pelo teclado.
 
-O figsom só aceita comandos na conversa "Você", não guarda mensagens de ninguém e não baixa histórico.
+O figsom só aceita comandos na conversa "Você", não guarda mensagens de ninguém e não baixa histórico. A pasta da sessão guarda só o que o protocolo do WhatsApp exige pra funcionar (chaves de criptografia e identificadores de contatos), como qualquer aparelho vinculado.
+
+Um `!som` mandado com o figsom fechado é atendido quando ele abrir de novo.
 
 ## Comandos
 
@@ -73,14 +78,21 @@ Todos na conversa **"Você"**:
 
 Exemplos: `!som 2-6`, `!som ajustar`, `!som tome 3-7 ajustar`.
 
-**Pasta de memes:** no app, use o botão *Abrir pasta de memes* (`Documentos/figsom/memes`). Para `!som nome`, o figsom procura `nome.webp` ou um vídeo (`nome.mp4`, `.mov`, `.webm`, `.mkv`, `.gif`, `.avi`), e um áudio separado opcional (`nome.mp3`, `.ogg`, `.opus`, `.m4a`, `.wav`, `.aac`, `.flac`).
+**Pasta de memes:** no app, use o botão *Abrir pasta de memes* (`Documentos/figsom/memes`). Para `!som nome`, o figsom procura `nome.webp` ou um vídeo (`nome.mp4`, `.mov`, `.webm`, `.mkv`, `.gif`, `.avi`), e um áudio separado (`nome.mp3`, `.ogg`, `.opus`, `.m4a`, `.wav`, `.aac`, `.flac`). O áudio separado é opcional pra vídeos com som, mas obrigatório pra `.gif` e `.webp`, que não têm áudio. Use só o nome do arquivo, sem pastas.
+
+Limites: vídeos de até 100 MB, e no máximo 10 s viram figurinha.
+
+> [!TIP]
+> **Figurinha parada (sem animar)?** O WhatsApp só anima figurinhas de até ~1 MB. O figsom reduz a qualidade pra caber, mas um vídeo com muito movimento ou detalhe pode passar disso mesmo assim. O tamanho aparece na mensagem de envio, por exemplo "(354 KB, 6s)". Se passar de ~1000 KB, use um trecho menor, como `!som 0-5`. As figurinhas oficiais costumam ter de 3 a 5 s.
 
 ## Dicas de segurança
 
-- Feche o figsom quando terminar de criar figurinhas.
+- Quando terminar de criar figurinhas, clique em **Pausar** ou feche o figsom. Os dois desligam a conexão sem desconectar a conta, e pra voltar não precisa de QR. Use **Desconectar conta** só quando for parar de usar de vez.
 - Mantenha o backup das conversas em dia.
 - Se aparecer algum aviso de "app não oficial", pare de usar.
 - Não transforme isso num bot público no seu número principal.
+- Pra parar de usar, clique em **Desconectar conta** antes de desinstalar. Desinstalar apaga a sessão do computador, mas não tira o figsom da lista de **Aparelhos conectados** do celular.
+- Confira de vez em quando a lista de **Aparelhos conectados**. O figsom aparece lá como um navegador (Chrome no Mac OS), porque é assim que a biblioteca se identifica.
 
 ## Para desenvolvedores
 
@@ -90,9 +102,12 @@ cd figsom
 npm install
 npm run app      # app com janela (Electron)
 npm start        # modo terminal
+npm test         # formato da figurinha + conversão (precisa de ffmpeg)
 ```
 
 O modo terminal precisa do ffmpeg no PATH. Guias: [Windows](docs/TERMINAL.md) e [Linux](docs/LINUX.md).
+
+O app usa o ffmpeg de `vendor/ffmpeg/` (ou o do PATH, se não houver). Pra empacotar localmente (`npm run dist:win` / `dist:linux`), ponha lá um ffmpeg com `libwebp` e `libopus`: o mesmo build LGPL que o workflow baixa (veja o topo do `release.yml`). Os testes usam o ffmpeg do PATH ou o da variável `FIGSOM_FFMPEG`.
 
 | Pasta | Conteúdo |
 |---|---|
@@ -120,7 +135,9 @@ npm version patch            # ou minor / major
 git push --follow-tags
 ```
 
-O GitHub Actions monta o instalador e o portátil do Windows e o AppImage do Linux, com o ffmpeg embutido, e publica a release.
+O GitHub Actions confere se a tag bate com a versão do `package.json`, roda os testes com o ffmpeg que vai no app, monta o instalador e o portátil do Windows, o `.deb` e o AppImage do Linux, e publica a release com o `SHA256SUMS.txt`.
+
+Prefira esse caminho a criar a release pelo site: assim ela só aparece quando os arquivos estiverem prontos. Se você criar pelo site mesmo assim, o workflow só anexa os arquivos e mantém as notas que você escreveu.
 
 ## Roadmap
 

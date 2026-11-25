@@ -15,9 +15,10 @@
       <p>O figsom cria figurinhas com som a partir dos seus vídeos e envia pelo seu WhatsApp. Pra isso, ele se conecta à sua conta como um <strong>aparelho vinculado</strong>, igual ao WhatsApp Web.</p>
       <ul>
         <li>É um projeto <strong>não oficial</strong>, sem ligação com o WhatsApp ou a Meta.</li>
-        <li>Usar clientes não oficiais viola os termos do WhatsApp e <strong>pode levar ao banimento da conta</strong>. Pra uso pessoal o risco é baixo, mas existe.</li>
+        <li>Usar clientes não oficiais viola os termos do WhatsApp e <strong>pode levar ao banimento da conta</strong>, mesmo em uso pessoal. Não dá pra saber o tamanho desse risco.</li>
+        <li>O formato da figurinha com som foi descoberto por engenharia reversa. Se a sua conta ainda não tem o recurso, você vai enviar algo que o WhatsApp ainda não liberou pra ela.</li>
         <li>O figsom só obedece comandos que <strong>você</strong> manda na conversa com você mesmo, e não guarda suas mensagens.</li>
-        <li>Se puder, use um número secundário. E nunca use pra mandar mensagens em massa.</li>
+        <li>Se puder, use um <strong>número secundário</strong>. E nunca use pra mandar mensagens em massa.</li>
       </ul>
       <div class="aviso-acoes">
         <button id="btn-aceitar" class="btn btn-primario">Entendi, quero continuar</button>
@@ -60,6 +61,12 @@
           <dt><code>!som nome</code></dt><dd>usa um arquivo da pasta de memes</dd>
           <dt><code>!som lista</code></dt><dd>mostra os memes da pasta</dd>
         </dl>
+
+        <h3>Pausar ou desconectar?</h3>
+        <dl class="variacoes">
+          <dt>Pausar</dt><dd>para de atender o <code>!som</code>, mas a conta continua conectada. Volta sem QR. Fechar a janela faz o mesmo.</dd>
+          <dt>Desconectar</dt><dd>tira o figsom dos aparelhos conectados e apaga a sessão. Pra voltar, só com QR. Se estiver pausado, retome antes.</dd>
+        </dl>
       </aside>
 
       <section class="atividade">
@@ -79,7 +86,8 @@
         <span>Apagar o <code>!som</code> depois de enviar</span>
       </label>
       <span class="rodape-espaco"></span>
-      <button id="btn-desconectar" class="btn btn-perigo" hidden>Desconectar conta</button>
+      <button id="btn-pausar" class="btn btn-sec" hidden title="Para de atender o !som sem desconectar a conta. Pra voltar não precisa de QR.">Pausar</button>
+      <button id="btn-desconectar" class="btn btn-perigo" hidden title="Tira o figsom dos aparelhos conectados e apaga a sessão. Pra voltar, vai precisar do QR.">Desconectar conta</button>
       <span id="versao" class="versao"></span>
     </footer>
   </div>

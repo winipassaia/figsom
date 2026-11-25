@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld('figsom', {
   estado: () => ipcRenderer.invoke('estado'),
   aceitarAviso: () => ipcRenderer.invoke('aceitar-aviso'),
   conectar: () => ipcRenderer.invoke('conectar'),
+  pausar: () => ipcRenderer.invoke('pausar'),
   desconectar: () => ipcRenderer.invoke('desconectar'),
   abrirMemes: () => ipcRenderer.invoke('abrir-memes'),
   config: (mudancas) => ipcRenderer.invoke('config', mudancas),

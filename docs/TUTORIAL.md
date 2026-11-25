@@ -5,7 +5,7 @@ Guia pra quem só quer baixar e usar: não precisa instalar Node.js, ffmpeg nem 
 > Prefere rodar pelo terminal? Veja o [modo terminal no Windows](TERMINAL.md) ou [no Linux](LINUX.md).
 
 > [!WARNING]
-> O figsom é **não oficial** e se conecta ao seu WhatsApp como um aparelho vinculado. Isso viola os termos do WhatsApp e **pode causar banimento**. O risco é baixo pra uso pessoal, mas existe. Se puder, use um número secundário.
+> O figsom é **não oficial** e se conecta ao seu WhatsApp como um aparelho vinculado. Isso viola os termos do WhatsApp e **pode causar banimento**, mesmo em uso pessoal. Não dá pra medir esse risco. Se puder, use um número secundário.
 
 ---
 
@@ -21,16 +21,27 @@ Guia pra quem só quer baixar e usar: não precisa instalar Node.js, ffmpeg nem 
 
 > Não quer instalar? Baixe o **`figsom-…-portatil-windows.exe`** e abra direto. Ele demora alguns segundos a mais pra abrir.
 
-### Linux
+### Linux: Ubuntu, Debian, Mint e derivados
 
-1. Na página de **[Releases](https://github.com/winipassaia/figsom/releases/latest)**, baixe o **`figsom-…-linux.AppImage`**.
+1. Na página de **[Releases](https://github.com/winipassaia/figsom/releases/latest)**, baixe o **`figsom-…-linux.deb`**.
+2. Instale pelo terminal, na pasta onde ele foi baixado:
+   ```bash
+   sudo apt install ./figsom-*-linux.deb
+   ```
+3. Abra o **figsom** pelo menu de aplicativos.
+
+> Use o `.deb` no Ubuntu 24.04 ou mais novo: ele instala a permissão de segurança (AppArmor) que o app precisa pra abrir. O AppImage costuma fechar sem abrir nessas versões.
+
+### Linux: outras distros (AppImage)
+
+1. Baixe o **`figsom-…-linux.AppImage`**.
 2. Dê permissão de execução: botão direito → Propriedades → Permissões → "Permitir executar como programa", ou no terminal:
    ```bash
    chmod +x figsom-*-linux.AppImage
    ```
 3. Abra com dois cliques.
 
-> Em algumas distros o AppImage pede o pacote `libfuse2`: `sudo apt install libfuse2`.
+> Se o AppImage pedir FUSE, instale o `libfuse2` (no Ubuntu 24.04 o pacote se chama `libfuse2t64`).
 
 ---
 
@@ -61,7 +72,7 @@ O figsom **só obedece comandos nessa conversa**.
 
 ### 2. Mande um vídeo e responda com `!som`
 
-1. Envie um vídeo curto nessa conversa. O figsom usa no máximo **10 segundos**.
+1. Envie um vídeo curto nessa conversa. O figsom usa no máximo **10 segundos**. Pra vídeos com muito movimento, 3 a 5 segundos funcionam melhor (a figurinha precisa ficar com até ~1 MB pra animar).
 2. **Segure o dedo no vídeo** e toque em **Responder**.
 3. Escreva `!som` e envie.
 
@@ -97,10 +108,24 @@ O botão **Abrir pasta de memes** abre `Documentos/figsom/memes`. Coloque arquiv
 
 As variações também funcionam aqui: `!som tome 3-7 ajustar`. `!som lista` manda a lista dos memes da pasta.
 
-### Desligar e desconectar
+GIF e `.webp` não têm som: eles sempre precisam de um áudio com o mesmo nome. Use só o nome do arquivo no comando, sem pastas.
 
-- **Fechar a janela** desliga o figsom. Ele não fica rodando escondido.
-- **Desconectar conta**, no canto de baixo, remove o figsom dos aparelhos conectados e apaga a sessão do computador.
+### Pausar, desligar e desconectar
+
+Tem dois botões no canto de baixo, e eles fazem coisas bem diferentes:
+
+| | **Pausar** | **Desconectar conta** |
+|---|---|---|
+| O que faz | Para de atender o `!som`. A conta continua vinculada. | Tira o figsom dos aparelhos conectados e apaga a sessão do computador. |
+| Pra voltar | Clique em **Retomar**. Não precisa de QR. | Só escaneando o QR de novo. |
+| Quando usar | Quer deixar o figsom quieto por um tempo, sem fechar a janela. | Vai parar de usar, trocar de conta ou desinstalar. |
+
+- **Fechar a janela** faz o mesmo que Pausar: desliga o figsom sem desconectar a conta. Ele não fica rodando escondido, e na próxima vez que você abrir, ele conecta sozinho, sem QR.
+- Um `!som` mandado com o figsom pausado ou fechado é atendido quando você retomar ou abrir ele de novo.
+- Pra desconectar estando pausado, clique em **Retomar** antes: o figsom precisa estar conectado pra avisar o WhatsApp.
+- Se clicar em **Desconectar conta** sem internet, ele apaga a sessão mesmo assim e avisa: aí confira no celular, em **Aparelhos conectados**, e remova o figsom de lá.
+- **Antes de desinstalar, clique em Desconectar conta.** Desinstalar apaga a sessão do computador, mas o figsom continua na lista de aparelhos conectados do celular até você remover.
+- Na lista de **Aparelhos conectados** do celular, o figsom aparece como um navegador (Chrome no Mac OS).
 
 ---
 
@@ -113,8 +138,15 @@ As variações também funcionam aqui: `!som tome 3-7 ajustar`. `!som lista` man
 | `!som` não faz nada | Confira se está na conversa **"Você"** e se **respondeu** o vídeo (segurar → Responder). |
 | A figurinha chegou sem som | Ela foi encaminhada. Mande pelo teclado de figurinhas. |
 | A figurinha cortou uma parte importante | Use `!som ajustar`. |
+| A figurinha chegou parada, sem animar | Ela passou de ~1 MB, o limite pra animar. Isso acontece com vídeos com muito movimento ou detalhe. Veja o tamanho na Atividade (ex.: "1200 KB") e use um trecho menor, como `!som 0-5`. |
+| "Esse vídeo não tem áudio" | Ele não tem som (GIFs do WhatsApp nunca têm). Use outro vídeo, ou ponha o meme na pasta com um áudio de mesmo nome. |
+| "Não sobrou nada no trecho" | O trecho do `!som 2-6` passa do fim do vídeo. Use segundos que existam no vídeo. |
+| "Não consegui baixar o vídeo" | O vídeo é antigo e saiu do servidor do WhatsApp. Mande ele de novo e responda com `!som`. |
+| "Esta sessão foi aberta em outro lugar" | Tem outra janela do figsom (ou o modo terminal com a mesma sessão) aberta. Feche a outra e clique em **Conectar WhatsApp**. |
+| "O WhatsApp recusou a conexão (403)" | O WhatsApp bloqueou o acesso. Abra o WhatsApp no celular pra ver se a conta tem algum aviso, e pare de usar o figsom nessa conta. |
 | Desconectei pelo celular | Abra o figsom de novo e escaneie o novo QR. |
-| AppImage não abre no Linux | `chmod +x` no arquivo e, se pedir, `sudo apt install libfuse2`. |
+| Linux: o app fecha sem abrir (Ubuntu 24.04+) | Use o `.deb` em vez do AppImage. |
+| AppImage não abre no Linux | `chmod +x` no arquivo e, se pedir FUSE, instale o `libfuse2` (`libfuse2t64` no Ubuntu 24.04). |
 
 ## Onde ficam os dados
 
@@ -124,4 +156,4 @@ As variações também funcionam aqui: `!som tome 3-7 ajustar`. `!som lista` man
 | Pasta de memes | `Documentos\figsom\memes` | `~/Documentos/figsom/memes` (ou `~/Documents`) |
 
 > [!CAUTION]
-> A pasta `auth` dá acesso total ao seu WhatsApp. Nunca compartilhe. Pra apagar, use **Desconectar conta**.
+> A pasta `auth` dá acesso total ao seu WhatsApp. Nunca compartilhe, e não deixe ela dentro de pastas sincronizadas (OneDrive, Dropbox, Syncthing...). Pra apagar, use **Desconectar conta**.
