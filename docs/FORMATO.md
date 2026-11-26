@@ -78,7 +78,7 @@ O truque depende de detalhes internos do Baileys, por isso a versão fica fixa n
 
 ## Como investigar você mesmo
 
-1. No modo terminal, ponha `capturar: true` no `index.js`. Não precisa mexer no `soConversaComigo`: a captura vale pra qualquer conversa, e deixar ele `true` evita que um `!som` digitado num grupo dispare.
+1. No modo terminal, ponha `capturar: true` no `index.js`. Não precisa mexer no `soConversaComigo`: a captura vale pra qualquer conversa, e deixar ele `true` evita que um `!criar` digitado num grupo dispare.
 2. Receba uma figurinha com som (enviada direto, não encaminhada).
 3. Veja `dumps/raw/*.txt`: a árvore de campos sem nomes, no estilo de `protoc --decode_raw`.
 4. Veja `dumps/figsom/*/`: o `fig.webp` e o `som.ogg` já descriptografados.

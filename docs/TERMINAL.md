@@ -1,6 +1,6 @@
 # Modo terminal (Windows)
 
-Pra quem prefere rodar o figsom pelo código-fonte, sem o app com janela. Os comandos no WhatsApp são os mesmos.
+Pra quem prefere rodar o figsom pelo código-fonte, sem o app com janela. Os comandos no WhatsApp são os mesmos (`!criar`, `!salvar`, `!memes`, `!ajuda`). A aba Memes, com a biblioteca e o **Criar e enviar**, só existe no app.
 
 > Só quer usar? O jeito fácil é o **[app](TUTORIAL.md)**. No Linux, veja o **[modo terminal no Linux](LINUX.md)**.
 
@@ -48,6 +48,8 @@ A sessão fica salva na pasta `auth/`, ao lado do código. **Nunca compartilhe e
 
 Igual ao app: veja a [Parte 3 do tutorial](TUTORIAL.md#parte-3-criar-figurinhas-com-som). No modo terminal, a pasta de memes é a `memes/` dentro do projeto.
 
+Pra usar `!criar <link>` e `!salvar` (X e TikTok), mude `baixarLinks` pra `true` no `index.js` e reinicie. Na primeira vez, o figsom baixa o yt-dlp (uns 25 MB) da [release oficial](https://github.com/yt-dlp/yt-dlp/releases), confere o SHA-256 e guarda na pasta `bin/` do projeto. Leia o [aviso sobre direitos autorais](TUTORIAL.md#parte-4-baixar-do-x-e-do-tiktok) antes.
+
 Pra desligar, use **Ctrl + C**. É o mesmo que o botão **Pausar** do app: a sessão fica guardada e, da próxima vez, ele conecta sem QR. Pra desconectar a conta de vez, remova o aparelho no celular (**Aparelhos conectados**) e apague a pasta `auth/`.
 
 ## Configuração
@@ -58,7 +60,9 @@ No topo do `index.js`:
 |---|---|---|
 | `memesDir` | `memes` | Pasta dos memes |
 | `authDir` | `auth` | Sessão do WhatsApp |
-| `apagarComando` | `true` | Apaga a mensagem `!som` depois de enviar |
+| `binDir` | `bin` | Onde fica o yt-dlp baixado |
+| `baixarLinks` | `false` | Liga o `!criar <link>` e o `!salvar` (X e TikTok). Baixa o yt-dlp na primeira vez. |
+| `apagarPedido` | `false` | `true` apaga a mensagem do comando depois de enviar a figurinha. Com `false`, o figsom só reage ✅ (ou ❌) nela |
 | `soConversaComigo` | `true` | Só aceita comandos na conversa "Você" |
 | `capturar` | `false` | Modo estudo: salva em `dumps/` as figurinhas **recebidas** de qualquer conversa, inclusive de outras pessoas. Veja [FORMATO.md](FORMATO.md). |
 
@@ -69,3 +73,5 @@ No topo do `index.js`:
 | `'node' não é reconhecido...` | O Node.js não foi instalado, ou o Prompt foi aberto antes. Reabra o Prompt. |
 | `ffmpeg não encontrado` | Volte ao passo 1 e **reabra o terminal** depois do `winget`. |
 | `Rode de novo para escanear um novo QR.` | Você desconectou pelo celular. Rode de novo e escaneie. |
+| `Baixar de links (X e TikTok) está desligado` | Mude `baixarLinks` pra `true` no `index.js` e reinicie. |
+| `Não consegui baixar o yt-dlp do GitHub` | Confira a internet. Se o antivírus apagou o arquivo, apague a pasta `bin/` e rode de novo. |
