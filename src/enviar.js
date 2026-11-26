@@ -160,7 +160,7 @@ function argsEntrada(entrada, formato) {
 function argsTrecho({ inicio, fim } = {}) {
   const ini = inicio > 0 ? inicio : 0
   if (fim != null && !(fim > ini)) {
-    throw new ErroFigsom('trecho', `Trecho inválido: o fim (${fim}s) precisa vir depois do início (${ini}s). Exemplo: !som 2-6`)
+    throw new ErroFigsom('trecho', `Trecho inválido: o fim (${fim}s) precisa vir depois do início (${ini}s). Exemplo: !criar 2-6`)
   }
   const args = []
   if (ini > 0) args.push('-ss', String(ini))
@@ -222,6 +222,46 @@ export async function paraOgg(entrada, { formato, ...trecho } = {}) {
     if (segundosOgg(buf) < 0.05) throw new ErroFigsom('vazio', foraDoVideo(trecho, 'o áudio'))
     return buf
   })
+}
+
+// Miniatura pra biblioteca do app: um quadro pequeno (WebP parado, 192×192)
+export async function gerarMiniatura(entrada) {
+  return comPastaTemp(async (dir) => {
+    const saida = path.join(dir, 'mini.webp')
+    // 0,5 s costuma fugir da tela preta do começo; vídeos curtinhos não têm esse quadro
+    for (const inicio of [['-ss', '0.5'], []]) {
+      try {
+        await ffmpeg([
+          ...inicio, ...argsEntrada(entrada), '-an', '-frames:v', '1',
+          '-vf', 'scale=192:192:force_original_aspect_ratio=increase,crop=192:192',
+          '-c:v', 'libwebp', '-q:v', '70', saida,
+        ])
+      } catch (e) {
+        if (!inicio.length) throw e
+        continue
+      }
+      const buf = await fs.readFile(saida).catch(() => Buffer.alloc(0))
+      if (ehWebp(buf)) return buf
+    }
+    throw new ErroFigsom('vazio', 'Não consegui gerar a miniatura desse arquivo.')
+  })
+}
+
+// O que tem dentro do arquivo (lendo o cabeçalho que o ffmpeg mostra): { video, audio, duracao }
+export async function inspecionar(entrada) {
+  let stderr = ''
+  try {
+    await run(FFMPEG, ['-hide_banner', ...argsEntrada(entrada)], { windowsHide: true, timeout: 30_000, killSignal: 'SIGKILL' })
+  } catch (e) {
+    if (e.code === 'ENOENT') throw new ErroFigsom('ffmpeg-ausente', 'ffmpeg não encontrado.')
+    stderr = String(e.stderr || '') // sem arquivo de saída o ffmpeg sempre "falha": o que interessa é o stderr
+  }
+  const d = stderr.match(/Duration: (\d+):(\d+):(\d+(?:\.\d+)?)/)
+  return {
+    video: /Stream #.*: Video:/.test(stderr),
+    audio: /Stream #.*: Audio:/.test(stderr),
+    duracao: d ? Number(d[1]) * 3600 + Number(d[2]) * 60 + Number(d[3]) : null,
+  }
 }
 
 // ---------- envio ----------
