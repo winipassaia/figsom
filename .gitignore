@@ -10,3 +10,5 @@ memes/*
 Thumbs.db
 dist/
 vendor/
+# yt-dlp baixado pelo modo terminal (baixarLinks: true)
+bin/

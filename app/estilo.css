@@ -94,6 +94,16 @@ code {
 .aviso li { margin-bottom: 8px; }
 .aviso li strong { color: var(--tinta); }
 .aviso-acoes { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+/* janela baixa (860×620): o aviso inteiro cabe sem rolar */
+@media (max-height: 680px) {
+  .aviso { padding: 12px; }
+  .aviso-cartao { padding: 20px 30px 20px; }
+  .aviso-icone { width: 44px; height: 44px; margin: 0 0 4px -4px; }
+  .aviso h1 { font-size: 25px; margin-bottom: 6px; }
+  .aviso p { font-size: 14px; margin-bottom: 8px; }
+  .aviso ul { font-size: 14px; margin-bottom: 16px; }
+  .aviso li { margin-bottom: 5px; }
+}
 
 /* ---------- layout principal ---------- */
 .app { height: 100%; display: grid; grid-template-rows: auto 1fr auto; }
@@ -124,14 +134,259 @@ code {
 .status[data-status="deslogado"] .status-ponto { background: var(--erro); }
 .status[data-status="pausado"] .status-ponto { background: var(--ambar); }
 
+/* abas Início / Memes */
+.abas {
+  display: flex; gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: var(--papel-2);
+}
+.aba {
+  font: inherit; font-weight: 650; font-size: 14.5px;
+  border: 0; border-radius: 999px;
+  padding: 6px 18px;
+  background: transparent; color: var(--tinta-suave);
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+.aba:hover { color: var(--tinta); }
+.aba[aria-selected="true"] { background: var(--adesivo); color: var(--tinta); box-shadow: 0 1px 0 var(--linha); }
+.aba:focus-visible { outline: 3px solid var(--chiclete); outline-offset: 2px; }
+
 .corpo {
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(340px, 1.15fr) minmax(300px, 1fr);
-  grid-template-rows: minmax(0, 1fr) clamp(130px, 22vh, 220px);
+  grid-template-rows: minmax(0, 1fr) clamp(116px, 20vh, 210px);
   gap: 16px;
   padding: 4px 24px 16px;
 }
+.painel { min-height: 0; display: grid; gap: 16px; }
+.painel-inicio { grid-template-columns: minmax(340px, 1.15fr) minmax(300px, 1fr); }
+.painel-memes { grid-template-columns: minmax(250px, 290px) minmax(0, 1fr); }
+
+/* cartões brancos (guia, baixar vídeo, biblioteca) */
+.cartao, .guia {
+  background: var(--adesivo);
+  border-radius: 20px;
+  box-shadow: 0 1px 0 var(--linha);
+  min-height: 0;
+}
+.cartao { padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; }
+.cartao h2 { font-size: 17px; }
+.nota { margin: 0; font-size: 13px; color: var(--tinta-suave); line-height: 1.4; }
+.so-leitor { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.campo {
+  font: inherit; font-size: 14px;
+  width: 100%;
+  padding: 7px 12px;
+  border: 0; border-radius: 10px;
+  background: var(--papel);
+  color: var(--tinta);
+  box-shadow: inset 0 0 0 1.5px var(--linha);
+}
+.campo::placeholder { color: var(--tinta-suave); opacity: 0.8; }
+.campo:focus { outline: none; box-shadow: inset 0 0 0 2px var(--chiclete); }
+.campo:disabled { opacity: 0.55; }
+.btn:disabled { opacity: 0.45; cursor: default; }
+.btn-primario:disabled:hover { background: var(--chiclete); }
+.btn-mini { font-size: 13px; padding: 0.42em 0.95em; }
+
+.resultado:empty { display: none; }
+.resultado[data-tipo="ok"] { color: var(--menta); font-weight: 600; }
+.resultado[data-tipo="aviso"] { color: var(--ambar); font-weight: 600; }
+.resultado[data-tipo="erro"] { color: var(--erro); font-weight: 600; }
+
+/* cabeçalho dos cartões: um adesivinho com ícone, no mesmo jeito do adesivo do palco */
+.cartao-cabeca { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.icone-adesivo {
+  width: 30px; height: 30px; flex-shrink: 0;
+  display: grid; place-items: center;
+  border-radius: 9px;
+  background: var(--chiclete); color: #fff;
+  transform: rotate(-6deg);
+  box-shadow: 0 0 0 3px var(--adesivo), 0 6px 12px -6px rgba(34, 25, 58, 0.55);
+}
+.icone-menta { background: var(--menta); transform: rotate(5deg); }
+
+/* baixar vídeo */
+.baixar { overflow: auto; }
+.baixador-ligado { display: flex; flex-direction: column; gap: 10px; }
+.selo {
+  --p: 0%;
+  align-self: flex-start;
+  display: inline-flex; align-items: center; gap: 8px;
+  max-width: 100%;
+  margin: 0; padding: 4px 12px 4px 10px;
+  border-radius: 14px;
+  background: var(--papel);
+  font-size: 13px; font-weight: 600; line-height: 1.35;
+}
+.selo-ponto { width: 8px; height: 8px; border-radius: 50%; background: var(--tinta-suave); flex-shrink: 0; }
+.selo[data-estado="pronto"] .selo-ponto { background: var(--menta); box-shadow: 0 0 0 3px rgba(23, 166, 115, 0.18); }
+/* baixando: o próprio selo enche, feito barra de progresso */
+.selo[data-estado="baixando"] { background: linear-gradient(90deg, rgba(255, 79, 134, 0.18) var(--p), var(--papel) var(--p)); }
+.selo[data-estado="baixando"] .selo-ponto,
+.selo[data-estado="preparando"] .selo-ponto { background: var(--ambar); animation: piscar 1.2s ease-in-out infinite; }
+.selo[data-estado="erro"] { color: var(--erro); }
+.selo[data-estado="erro"] .selo-ponto { background: var(--erro); }
+.form-baixar { display: flex; flex-direction: column; gap: 8px; }
+.form-linha { display: flex; gap: 8px; }
+.form-linha .campo { flex: 1; min-width: 0; }
+.form-linha .btn { flex-shrink: 0; padding-inline: 1em; }
+.dica-celular code { white-space: nowrap; }
+.legal { margin-top: auto; padding-top: 4px; font-size: 12.5px; }
+/* janela baixa: só o essencial no cartão de download */
+@media (max-height: 680px) { .dica-celular { display: none; } }
+
+/* biblioteca */
+.biblioteca { position: relative; padding-bottom: 8px; }
+/* resultado do "Criar e enviar": um aviso que flutua sobre a grade, sem empurrar nada */
+.aviso-flutuante {
+  position: absolute; left: 50%; bottom: 14px; z-index: 2;
+  width: max-content; max-width: calc(100% - 40px);
+  margin: 0; padding: 7px 16px;
+  border-radius: 999px;
+  background: var(--tinta); color: #fff;
+  font-size: 13px; font-weight: 600; text-align: center;
+  box-shadow: 0 12px 24px -12px rgba(34, 25, 58, 0.7);
+  transform: translateX(-50%);
+  animation: surgir 0.2s ease both;
+}
+.aviso-flutuante:empty { display: none; }
+.aviso-flutuante[data-tipo="ok"] { background: var(--menta); }
+.aviso-flutuante[data-tipo="erro"] { background: var(--erro); }
+.aviso-flutuante[data-tipo="dica"] {
+  background: var(--adesivo); color: var(--tinta-suave);
+  box-shadow: 0 0 0 1.5px var(--linha), 0 12px 24px -16px rgba(34, 25, 58, 0.6);
+}
+@keyframes surgir { from { opacity: 0; transform: translate(-50%, 6px); } }
+.cartao-topo { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.cartao-acoes { display: flex; gap: 8px; }
+.qtd {
+  display: inline-block; min-width: 22px;
+  margin-left: 4px; padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--papel-2); color: var(--tinta-suave);
+  font-size: 12.5px; font-weight: 650; text-align: center; vertical-align: 2px;
+}
+.qtd:empty { display: none; }
+.opcoes-fig {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 6px 20px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: var(--papel);
+  font-size: 14px;
+}
+.opcoes-fig .campo { background: var(--adesivo); }
+.trecho { display: inline-flex; align-items: center; gap: 6px; }
+.campo-seg { width: 48px; padding: 4px 8px; text-align: center; }
+
+.grade {
+  list-style: none; margin: 0;
+  padding: 8px 6px; /* folga pra sombra e pro giro dos adesivos */
+  flex: 1; min-height: 0; overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  grid-auto-rows: max-content;
+  gap: 14px 12px;
+}
+.meme { --giro: -1.6deg; display: grid; justify-items: center; gap: 7px; min-width: 0; }
+.meme:nth-child(3n + 2) { --giro: 1.4deg; }
+.meme:nth-child(3n) { --giro: -0.6deg; }
+
+/* cada miniatura é um adesivo: borda branca, sombra e um giro leve que endireita no mouse */
+.meme-adesivo {
+  position: relative;
+  width: 100%;
+  padding: 5px;
+  border-radius: 16px;
+  background: var(--adesivo);
+  box-shadow: 0 0 0 1px var(--linha), 0 10px 18px -12px rgba(34, 25, 58, 0.55);
+  transform: rotate(var(--giro));
+  transition: transform 0.18s ease;
+}
+.meme:hover .meme-adesivo, .meme:focus-within .meme-adesivo { transform: rotate(0deg) translateY(-2px); }
+.meme-mini {
+  aspect-ratio: 1;
+  border-radius: 11px;
+  overflow: hidden;
+  background: var(--papel-2);
+  display: grid; place-items: center;
+}
+/* sem miniatura (ainda carregando, ou só áudio): as barrinhas de som do adesivo */
+.meme-mini::before {
+  content: '';
+  width: 40%; height: 32%;
+  background: linear-gradient(90deg, var(--linha) 0 16%, transparent 16% 28%, var(--linha) 28% 44%, transparent 44% 56%, var(--linha) 56% 72%, transparent 72% 84%, var(--linha) 84%);
+  border-radius: 4px;
+}
+.meme-mini img { display: none; width: 100%; height: 100%; object-fit: cover; grid-area: 1 / 1; }
+.meme.com-mini .meme-mini::before { display: none; }
+.meme.com-mini .meme-mini img { display: block; }
+.meme.so-audio .meme-mini { background: #FFE3EC; }
+.meme.so-audio .meme-mini::before {
+  background: linear-gradient(90deg, var(--chiclete) 0 16%, transparent 16% 28%, var(--chiclete) 28% 44%, transparent 44% 56%, var(--chiclete) 56% 72%, transparent 72% 84%, var(--chiclete) 84%);
+  opacity: 0.55;
+}
+.meme.inutil .meme-adesivo { opacity: 0.75; }
+.meme-nome {
+  max-width: 100%;
+  font-size: 13px; font-weight: 650;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.btn-meme {
+  width: 100%;
+  font-size: 12px; padding: 0.5em 0.3em; white-space: nowrap;
+  background: var(--papel); color: var(--tinta);
+  box-shadow: inset 0 0 0 1.5px var(--linha);
+}
+.meme:hover .btn-meme:not(:disabled), .btn-meme:focus-visible { background: var(--chiclete); color: #fff; box-shadow: none; }
+.meme-falta { font-size: 12.5px; color: var(--tinta-suave); padding: 0.42em 0; }
+
+/* criando: as barrinhas dançam em cima da miniatura */
+.meme-onda {
+  position: absolute; inset: 5px;
+  border-radius: 11px;
+  background: rgba(34, 25, 58, 0.55);
+  display: none; align-items: center; justify-content: center; gap: 5px;
+}
+.meme-onda span { width: 7px; height: 34%; border-radius: 4px; background: #fff; animation: onda 1s ease-in-out infinite; }
+.meme-onda span:nth-child(2) { animation-delay: 0.15s; }
+.meme-onda span:nth-child(3) { animation-delay: 0.3s; }
+.meme-onda span:nth-child(4) { animation-delay: 0.45s; }
+.meme.enviando .meme-onda { display: flex; }
+.meme.enviando .meme-adesivo { transform: rotate(0deg); }
+
+/* enviou (ou acabou de chegar na pasta): o adesivo "cola" e ganha um ✓ */
+.meme-adesivo::after {
+  content: '✓';
+  position: absolute; top: -7px; right: -7px;
+  width: 22px; height: 22px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--menta); color: #fff;
+  font-size: 13px; font-weight: 800;
+  box-shadow: 0 0 0 2.5px var(--adesivo);
+  transform: scale(0);
+  transition: transform 0.2s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+.meme.colou .meme-adesivo { animation: colar-meme 0.55s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+.meme.colou .meme-adesivo::after { transform: scale(1); }
+@keyframes colar-meme {
+  from { transform: rotate(-12deg) scale(1.15); opacity: 0.3; }
+  to { transform: rotate(var(--giro)) scale(1); opacity: 1; }
+}
+
+/* pasta vazia: o adesivo calmo, pequeno */
+.grade-vazia {
+  grid-column: 1 / -1;
+  display: grid; justify-items: center; gap: 14px;
+  padding: 14px 16px;
+  text-align: center; color: var(--tinta-suave); font-size: 14px;
+}
+.grade-vazia .adesivo-som { width: 76px; height: 76px; padding: 7px; border-radius: 18px; }
+.grade-vazia .adesivo-som .miolo { gap: 5px; border-radius: 11px; }
+.grade-vazia .adesivo-som .barra { width: 8px; border-radius: 4px; }
 
 /* ---------- palco: o adesivo ---------- */
 .palco {
@@ -189,6 +444,7 @@ code {
   box-shadow: 0 1px 0 var(--linha);
 }
 .guia h2 { font-size: 19px; margin-bottom: 12px; }
+.guia .nota { margin-top: 8px; }
 .guia h3 { font-size: 15px; margin: 14px 0 6px; color: var(--tinta-suave); font-weight: 650; }
 .passos { list-style: none; counter-reset: passo; margin: 0; padding: 0; display: grid; gap: 8px; }
 .passos li { counter-increment: passo; display: grid; grid-template-columns: 30px 1fr; column-gap: 10px; }
@@ -234,16 +490,17 @@ code {
 .log .aviso-log { color: #F5C46B; }
 .log .erro { color: #FF8C9C; }
 .log .vazio { color: #7D729C; display: block; font-family: var(--fonte); font-size: 14px; }
-.guia::-webkit-scrollbar, .log::-webkit-scrollbar { width: 8px; }
-.guia::-webkit-scrollbar-thumb { background: var(--linha); border-radius: 4px; }
+.guia::-webkit-scrollbar, .grade::-webkit-scrollbar, .baixar::-webkit-scrollbar, .log::-webkit-scrollbar { width: 8px; }
+.guia::-webkit-scrollbar-thumb, .grade::-webkit-scrollbar-thumb, .baixar::-webkit-scrollbar-thumb { background: var(--linha); border-radius: 4px; }
 .log::-webkit-scrollbar-thumb { background: #3B3058; border-radius: 4px; }
 
 /* ---------- rodapé ---------- */
 .rodape {
-  display: flex; align-items: center; gap: 18px;
+  display: flex; align-items: center; gap: 14px;
   padding: 12px 24px 16px;
   font-size: 14px;
 }
+.rodape > * { white-space: nowrap; }
 .rodape-espaco { flex: 1; }
 .versao { color: var(--tinta-suave); font-size: 12.5px; }
 
@@ -273,6 +530,8 @@ code {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
 
-@media (max-width: 900px) {
-  .corpo { grid-template-columns: 1fr; grid-template-rows: auto auto minmax(160px, 1fr); overflow: auto; }
+/* menor que a janela mínima (860×620) só com zoom: aí empilha e rola */
+@media (max-width: 760px) {
+  .corpo { grid-template-rows: auto minmax(160px, 1fr); overflow: auto; }
+  .painel-inicio, .painel-memes { grid-template-columns: 1fr; }
 }

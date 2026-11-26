@@ -6,7 +6,8 @@ import { execFileSync } from 'node:child_process'
 import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
-import { paraWebp, paraOgg, definirFfmpeg, segundosOgg } from '../src/enviar.js'
+import { paraWebp, paraOgg, definirFfmpeg, segundosOgg, gerarMiniatura, inspecionar, comAssinatura, lerAssinatura } from '../src/enviar.js'
+import { miniaturaComCache } from '../src/memes.js'
 
 const FFMPEG = process.env.FIGSOM_FFMPEG || 'ffmpeg'
 let temFfmpeg = true
@@ -75,6 +76,55 @@ test('erro do ffmpeg não mostra a pasta do usuário', opcoes, async () => {
   const erro = await paraOgg(inexistente).catch((e) => e)
   assert.equal(erro.codigo, 'ffmpeg')
   assert.ok(!erro.message.includes(os.homedir()), erro.message)
+})
+
+test('miniatura: um quadro pequeno em WebP (parado)', opcoes, async () => {
+  const mini = await gerarMiniatura(comAudio)
+  assert.equal(mini.toString('ascii', 8, 12), 'WEBP')
+  assert.ok(!mini.includes(Buffer.from('ANIM')))
+  assert.ok(mini.length < 30_000, `${mini.length} bytes`)
+})
+
+test('miniatura com cache: a segunda vez não chama o ffmpeg', opcoes, async () => {
+  const memesDir = path.join(dir, 'memes')
+  const cacheDir = path.join(dir, 'cache')
+  fs.mkdirSync(memesDir, { recursive: true })
+  fs.copyFileSync(comAudio, path.join(memesDir, 'tome.mp4'))
+  const a = await miniaturaComCache({ memesDir, cacheDir, nome: 'tome' })
+  assert.equal(fs.readdirSync(cacheDir).length, 1)
+  definirFfmpeg(path.join(dir, 'sem-ffmpeg'))
+  try {
+    const b = await miniaturaComCache({ memesDir, cacheDir, nome: 'tome' })
+    assert.deepEqual(a, b)
+  } finally {
+    definirFfmpeg(FFMPEG)
+  }
+  assert.equal(await miniaturaComCache({ memesDir, cacheDir, nome: '../tome' }), null)
+})
+
+test('inspecionar: diz se o vídeo tem som', opcoes, async () => {
+  const com = await inspecionar(comAudio)
+  assert.deepEqual([com.video, com.audio], [true, true])
+  assert.ok(Math.abs(com.duracao - 6) < 0.5)
+  const sem = await inspecionar(semAudio)
+  assert.deepEqual([sem.video, sem.audio], [true, false])
+})
+
+test('figurinha assinada decodifica igualzinho à original (mesmos quadros)', opcoes, async () => {
+  const original = await paraWebp(comAudio, { inicio: 0, fim: 2 })
+  const assinada = comAssinatura(original)
+  assert.equal(lerAssinatura(assinada)['sticker-pack-name'], 'Criado pelo APP figsom')
+  assert.ok(assinada.length - original.length < 400, 'a assinatura ocupa poucos bytes')
+  const quadros = (buf, nome) => {
+    const arq = path.join(dir, nome)
+    fs.writeFileSync(arq, buf)
+    return execFileSync(FFMPEG, ['-hide_banner', '-loglevel', 'error', '-i', arq, '-map', '0:v', '-f', 'framemd5', '-'], { encoding: 'utf8' })
+      .split('\n').filter((l) => /^\s*0,/.test(l))
+  }
+  const a = quadros(original, 'original.webp')
+  const b = quadros(assinada, 'assinada.webp')
+  assert.ok(a.length > 0)
+  assert.deepEqual(b, a)
 })
 
 test('ffmpeg ausente vira erro próprio', opcoes, async () => {

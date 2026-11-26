@@ -5,7 +5,7 @@ Guia pra rodar o figsom pelo código-fonte no **Ubuntu/Debian** (e derivados: Mi
 > Só quer usar? Baixe o **AppImage** na página de [Releases](https://github.com/winipassaia/figsom/releases/latest). Ele já vem com tudo e tem janela. Veja o [tutorial](TUTORIAL.md#linux).
 
 > [!WARNING]
-> O figsom é **não oficial** e conecta no seu WhatsApp como um aparelho vinculado. Isso viola os termos do WhatsApp e **pode causar banimento**, mesmo em uso pessoal. Não dá pra medir esse risco. Leia as [Dicas de segurança](../README.md#dicas-de-segurança).
+> O figsom é **não oficial** e conecta no seu WhatsApp como um aparelho vinculado, o que vai contra os termos do WhatsApp. **O risco de banimento é baixo**: o figsom só age na sua própria conta, na conversa com você mesmo, e nunca manda mensagem pra outras pessoas, que é o que costuma levar a ban. Mas não é zero, então use um número secundário se puder. Leia as [Dicas de segurança](../README.md#dicas-de-segurança).
 
 ---
 
@@ -86,4 +86,6 @@ Depois siga do [passo 3](#3-baixe-o-figsom) em diante. Confira sempre se `node -
 | `bash: ./iniciar.sh: Permissão negada` | `chmod +x iniciar.sh` |
 | `EACCES` no `npm install` | Não use `sudo npm install`. Confira se a pasta é do seu usuário: `sudo chown -R $USER .` |
 
-Os outros problemas (QR, `!som` não responde, figurinha sem som) estão na [tabela do tutorial](TUTORIAL.md#problemas-comuns).
+Pra baixar do X e do TikTok (`!criar <link>`, `!salvar`), ponha `baixarLinks: true` no topo do `index.js`: veja [Configuração](TERMINAL.md#configuração).
+
+Os outros problemas (QR, `!criar` não responde, figurinha sem som, links) estão na [tabela do tutorial](TUTORIAL.md#problemas-comuns).

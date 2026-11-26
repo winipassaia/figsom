@@ -6,7 +6,9 @@ import fs from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import QRCode from 'qrcode'
 import { FigsomBot } from '../src/bot.js'
-import { limparCaminhos } from '../src/enviar.js'
+import { limparCaminhos, definirFfmpeg } from '../src/enviar.js'
+import { cancelarDownloads } from '../src/baixar.js'
+import { listarBiblioteca, miniaturaComCache, limparMiniaturas, nomeSeguro } from '../src/memes.js'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -14,12 +16,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url))
 // app.exit (e não app.quit) pra não chegar a criar janela nem conectar.
 const primeiraInstancia = app.requestSingleInstanceLock()
 if (!primeiraInstancia) app.exit(0)
+// demo (prints de desenvolvimento): no Windows, janela coberta por outra não repinta e o print sai velho
+if (process.env.FIGSOM_DEMO) app.commandLine.appendSwitch('disable-features', 'CalculateNativeWinOcclusion')
 
 // ---------- caminhos ----------
 const DADOS = app.getPath('userData') // ex.: %APPDATA%/figsom
 const AUTH_DIR = path.join(DADOS, 'auth')
 const CONFIG_ARQ = path.join(DADOS, 'config.json')
-const MEMES_DIR = path.join(app.getPath('documents'), 'figsom', 'memes')
+const BIN_DIR = path.join(DADOS, 'bin') // yt-dlp, baixado só se a chave "Baixar de links" for ligada
+const MINIATURAS_DIR = path.join(DADOS, 'miniaturas')
+// no modo demo (prints de desenvolvimento) a pasta de memes é de mentira, dentro do --user-data-dir
+const MEMES_DIR = process.env.FIGSOM_DEMO ? path.join(DADOS, 'memes-demo') : path.join(app.getPath('documents'), 'figsom', 'memes')
 const PAGINA = path.join(__dirname, 'index.html')
 
 function caminhoFfmpeg() {
@@ -27,9 +34,12 @@ function caminhoFfmpeg() {
   // App instalado: sempre o ffmpeg que vem junto (sem cair pro PATH, que no Windows procura
   // primeiro na pasta atual e poderia rodar um ffmpeg.exe qualquer).
   if (app.isPackaged) return path.join(process.resourcesPath, 'ffmpeg', exe)
+  if (process.env.FIGSOM_FFMPEG) return process.env.FIGSOM_FFMPEG // desenvolvimento: o mesmo dos testes
   const dev = path.join(__dirname, '..', 'vendor', 'ffmpeg', exe)
   return fs.existsSync(dev) ? dev : 'ffmpeg' // desenvolvimento: vendor/ ou o do PATH
 }
+
+definirFfmpeg(caminhoFfmpeg()) // miniaturas da aba Memes funcionam mesmo antes de conectar
 
 // Links externos: só páginas do GitHub, e sempre no navegador
 function abrirLinkSeguro(url) {
@@ -40,9 +50,15 @@ function abrirLinkSeguro(url) {
 }
 
 // ---------- config ----------
-const PADRAO = { aceitouAviso: false, apagarComando: true }
+const PADRAO = { aceitouAviso: false, apagarPedido: false, baixarLinks: false }
 function lerConfig() {
-  try { return { ...PADRAO, ...JSON.parse(fs.readFileSync(CONFIG_ARQ, 'utf8')) } } catch { return { ...PADRAO } }
+  try {
+    // 1.0 → 1.1: o antigo "apagarComando" (que vinha ligado) é descartado; agora o padrão é não apagar
+    const { apagarComando, ...salvo } = JSON.parse(fs.readFileSync(CONFIG_ARQ, 'utf8'))
+    return { ...PADRAO, ...salvo }
+  } catch {
+    return { ...PADRAO }
+  }
 }
 function salvarConfig(c) {
   fs.mkdirSync(DADOS, { recursive: true })
@@ -51,7 +67,7 @@ function salvarConfig(c) {
 let config = lerConfig()
 
 // ---------- estado compartilhado com a janela ----------
-const estado = { status: 'parado', qr: null, conta: null, logs: [] }
+const estado = { status: 'parado', qr: null, conta: null, logs: [], baixador: { estado: 'desligado' } }
 let janela = null
 let bot = null
 
@@ -69,14 +85,22 @@ function criarBot() {
   bot = new FigsomBot({
     authDir: AUTH_DIR,
     memesDir: MEMES_DIR,
+    binDir: BIN_DIR,
     ffmpeg: caminhoFfmpeg(),
     dicaFfmpeg: app.isPackaged
       ? 'O ffmpeg que vem com o figsom sumiu (às vezes o antivírus remove). Reinstale o figsom.'
       : 'Rode o app com o ffmpeg em vendor/ffmpeg ou no PATH.',
-    apagarComando: config.apagarComando,
+    baixarLinks: config.baixarLinks,
+    dicaBaixador: 'Pra ligar: no figsom do computador, abra a aba Memes e ligue a chave "Baixar de links (X e TikTok)".',
+    apagarPedido: config.apagarPedido,
     soConversaComigo: true,
   })
   bot.on('log', addLog)
+  bot.on('baixador', (b) => {
+    estado.baixador = b
+    enviar('estado', publico())
+  })
+  bot.on('memes', () => enviar('memes'))
   bot.on('status', (s) => {
     estado.status = s
     if (s !== 'aguardando-qr') estado.qr = null
@@ -93,17 +117,27 @@ function criarBot() {
   })
 }
 
+// cria o bot sem conectar (a aba Memes funciona mesmo desconectado)
+function garantirBot() {
+  if (!bot) {
+    criarBot()
+    if (config.baixarLinks) bot.conferirBaixador()
+  }
+  return bot
+}
+
 const publico = () => ({
   status: estado.status,
   qr: estado.qr,
   conta: estado.conta,
+  baixador: estado.baixador,
   config,
   memesDir: MEMES_DIR,
   versao: app.getVersion(),
 })
 
 async function iniciarBot() {
-  if (!bot) criarBot()
+  garantirBot()
   if (['iniciando', 'aguardando-qr', 'conectado', 'reconectando'].includes(bot.status)) return
   addLog({ nivel: 'info', texto: 'Iniciando conexão com o WhatsApp...', hora: new Date() })
   try {
@@ -153,14 +187,98 @@ tratar('abrir-memes', async () => {
 })
 // A janela só pode mudar opções conhecidas, com o tipo certo
 tratar('config', (mudancas) => {
-  if (typeof mudancas?.apagarComando === 'boolean') {
-    config = { ...config, apagarComando: mudancas.apagarComando }
+  if (typeof mudancas?.apagarPedido === 'boolean') {
+    config = { ...config, apagarPedido: mudancas.apagarPedido }
     salvarConfig(config)
-    if (bot) bot.apagarComando = config.apagarComando
+    if (bot) bot.apagarPedido = config.apagarPedido
+  }
+  if (typeof mudancas?.baixarLinks === 'boolean') {
+    config = { ...config, baixarLinks: mudancas.baixarLinks }
+    salvarConfig(config)
+    garantirBot().definirBaixarLinks(config.baixarLinks) // ligar baixa o yt-dlp (progresso na Atividade)
   }
   return publico()
 })
 tratar('abrir-link', (url) => abrirLinkSeguro(String(url)))
+
+// ---------- aba Memes ----------
+// Tudo que vem da janela é conferido aqui: tipo, tamanho e valores permitidos
+const ehObjeto = (v) => v !== null && typeof v === 'object' && !Array.isArray(v)
+const ehNome = (v) => typeof v === 'string' && v.length <= 120 && nomeSeguro(v)
+const ehSegundo = (v) => v === null || v === undefined || (typeof v === 'number' && Number.isFinite(v) && v >= 0 && v <= 3600)
+const recusa = (erro) => ({ ok: false, erro })
+
+tratar('listar-memes', async () => {
+  const itens = await listarBiblioteca(MEMES_DIR)
+  limparMiniaturas({ memesDir: MEMES_DIR, cacheDir: MINIATURAS_DIR }).catch(() => {})
+  return itens
+})
+
+// Miniaturas: no máximo 2 ffmpeg ao mesmo tempo
+let gerando = 0
+const filaMiniaturas = []
+async function comVaga(fn) {
+  if (gerando >= 2) await new Promise((r) => filaMiniaturas.push(r))
+  gerando++
+  try {
+    return await fn()
+  } finally {
+    gerando--
+    filaMiniaturas.shift()?.()
+  }
+}
+tratar('miniatura', async (nome) => {
+  if (!ehNome(nome)) return null
+  try {
+    const buf = await comVaga(() => miniaturaComCache({ memesDir: MEMES_DIR, cacheDir: MINIATURAS_DIR, nome }))
+    return buf ? `data:image/webp;base64,${buf.toString('base64')}` : null
+  } catch {
+    return null // sem miniatura, a janela mostra um ícone
+  }
+})
+
+// "Criar e enviar": figurinha de um meme da pasta → conversa "Você"
+let enviandoDoPC = false
+tratar('criar-enviar', async (pedido) => {
+  if (!ehObjeto(pedido) || !ehNome(pedido.nome)) return recusa('Meme inválido.')
+  const { nome, modo = 'cortar', inicio = null, fim = null } = pedido
+  if (!['cortar', 'ajustar'].includes(modo)) return recusa('Opção inválida.')
+  if (!ehSegundo(inicio) || !ehSegundo(fim)) return recusa('Trecho inválido: use segundos, como 2 e 6.')
+  if (fim != null && !(fim > (inicio ?? 0))) return recusa('Trecho inválido: o fim precisa vir depois do início.')
+  if (!bot || bot.status !== 'conectado') return recusa('Conecte o WhatsApp antes de enviar.')
+  if (enviandoDoPC) return recusa('Espere a figurinha anterior terminar.')
+  enviandoDoPC = true
+  try {
+    await bot.enviarDoPC(nome, { modo, ...(inicio != null ? { inicio } : {}), ...(fim != null ? { fim } : {}) })
+    return { ok: true }
+  } catch (e) {
+    return recusa(bot.mensagemDeErro(e))
+  } finally {
+    enviandoDoPC = false
+  }
+})
+
+// "Baixar vídeo": link do X/TikTok → pasta de memes
+let baixandoDoPC = false
+tratar('baixar-link', async (pedido) => {
+  if (!ehObjeto(pedido) || typeof pedido.url !== 'string' || pedido.url.length > 2048) return recusa('Link inválido.')
+  if (pedido.nome != null && (typeof pedido.nome !== 'string' || pedido.nome.length > 80)) return recusa('Nome inválido.')
+  if (!config.baixarLinks) return recusa('Ligue a chave "Baixar de links (X e TikTok)" primeiro.')
+  if (baixandoDoPC) return recusa('Espere o download anterior terminar.')
+  baixandoDoPC = true
+  const b = garantirBot()
+  try {
+    b.log(`🎬 Pedido do computador: baixar ${b.descreverLink(pedido.url)}`)
+    const r = await b.salvarDeLink(pedido.url, pedido.nome?.trim() || null)
+    return { ok: true, nome: r.nome, semAudio: r.semAudio }
+  } catch (e) {
+    const erro = b.mensagemDeErro(e)
+    b.log(`✖ ${erro}`, 'erro')
+    return recusa(erro)
+  } finally {
+    baixandoDoPC = false
+  }
+})
 
 // ---------- janela ----------
 function criarJanela() {
@@ -205,7 +323,10 @@ app.whenReady().then(async () => {
   if (process.env.FIGSOM_DEMO) {
     // modo de desenvolvimento: estados falsos + screenshots (não conecta)
     const { rodarDemo } = await import('./demo.js')
-    return rodarDemo({ janela, estado, enviar, publico, addLog, QRCode, app })
+    return rodarDemo({
+      janela, estado, enviar, publico, addLog, QRCode, app, memesDir: MEMES_DIR, ffmpeg: caminhoFfmpeg(),
+      mudarConfig: (m) => { config = { ...config, ...m } },
+    })
   }
   if (app.isPackaged && !fs.existsSync(caminhoFfmpeg())) {
     addLog({ nivel: 'erro', texto: 'O ffmpeg que vem com o figsom não foi encontrado. Reinstale o figsom (às vezes o antivírus remove o arquivo).', hora: new Date() })
@@ -214,6 +335,7 @@ app.whenReady().then(async () => {
 })
 
 app.on('window-all-closed', async () => {
+  cancelarDownloads()
   await bot?.stop()
   app.quit()
 })

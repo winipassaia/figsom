@@ -14,11 +14,10 @@
       <h1>Antes de começar</h1>
       <p>O figsom cria figurinhas com som a partir dos seus vídeos e envia pelo seu WhatsApp. Pra isso, ele se conecta à sua conta como um <strong>aparelho vinculado</strong>, igual ao WhatsApp Web.</p>
       <ul>
-        <li>É um projeto <strong>não oficial</strong>, sem ligação com o WhatsApp ou a Meta.</li>
-        <li>Usar clientes não oficiais viola os termos do WhatsApp e <strong>pode levar ao banimento da conta</strong>, mesmo em uso pessoal. Não dá pra saber o tamanho desse risco.</li>
+        <li>É um projeto <strong>não oficial</strong>, sem ligação com o WhatsApp ou a Meta, e usar clientes não oficiais vai contra os termos do WhatsApp.</li>
+        <li>O <strong>risco de banimento é baixo</strong>: o figsom só age na sua própria conta, na conversa com você mesmo, e nunca manda mensagem pra outras pessoas, que é o que costuma levar a ban. Mas <strong>não é zero</strong>, então use um <strong>número secundário</strong> se puder.</li>
         <li>O formato da figurinha com som foi descoberto por engenharia reversa. Se a sua conta ainda não tem o recurso, você vai enviar algo que o WhatsApp ainda não liberou pra ela.</li>
-        <li>O figsom só obedece comandos que <strong>você</strong> manda na conversa com você mesmo, e não guarda suas mensagens.</li>
-        <li>Se puder, use um <strong>número secundário</strong>. E nunca use pra mandar mensagens em massa.</li>
+        <li>O figsom não guarda suas mensagens e não baixa o histórico das conversas.</li>
       </ul>
       <div class="aviso-acoes">
         <button id="btn-aceitar" class="btn btn-primario">Entendi, quero continuar</button>
@@ -34,6 +33,10 @@
         <img src="icone.png" alt="" class="marca-icone">
         <span class="marca-nome">figsom</span>
       </div>
+      <nav class="abas" role="tablist" aria-label="Seções">
+        <button class="aba" role="tab" id="aba-inicio" data-aba="inicio" aria-controls="painel-inicio" aria-selected="true">Início</button>
+        <button class="aba" role="tab" id="aba-memes" data-aba="memes" aria-controls="painel-memes" aria-selected="false" tabindex="-1">Memes</button>
+      </nav>
       <div id="status" class="status" data-status="parado">
         <span class="status-ponto"></span>
         <span id="status-texto">Desconectado</span>
@@ -41,33 +44,108 @@
     </header>
 
     <main class="corpo">
-      <section class="palco" aria-live="polite">
-        <div id="palco-conteudo"></div>
-      </section>
+      <!-- aba Início -->
+      <div id="painel-inicio" class="painel painel-inicio" role="tabpanel" aria-labelledby="aba-inicio">
+        <section class="palco" aria-live="polite">
+          <div id="palco-conteudo"></div>
+        </section>
 
-      <aside class="guia">
-        <h2>Como usar</h2>
-        <ol class="passos">
-          <li><strong>Abra a conversa com você mesmo</strong><span>Nova conversa → seu próprio contato (Você).</span></li>
-          <li><strong>Mande um vídeo curto</strong><span>Até 10 segundos. Quadrado ou vertical fica melhor.</span></li>
-          <li><strong>Responda o vídeo com <code>!som</code></strong><span>Segure o vídeo → Responder → envie <code>!som</code>.</span></li>
-          <li><strong>Salve e use</strong><span>Toque na figurinha → Adicionar às figurinhas. Envie pelo teclado: encaminhar perde o som.</span></li>
-        </ol>
+        <aside class="guia">
+          <h2>Como usar</h2>
+          <ol class="passos">
+            <li><strong>Abra a conversa com você mesmo</strong><span>Nova conversa → seu próprio contato (Você).</span></li>
+            <li><strong>Mande um vídeo ou um link</strong><span>Vídeo de até 10 segundos, ou o link de um post do X ou do TikTok.</span></li>
+            <li><strong>Responda com <code>!criar</code></strong><span>Segure o vídeo (ou o link) → Responder → envie <code>!criar</code>. O figsom reage ⏳ e depois ✅.</span></li>
+            <li><strong>Salve e use</strong><span>Toque na figurinha → Adicionar às figurinhas. Envie pelo teclado: encaminhar perde o som.</span></li>
+          </ol>
 
-        <h3>Variações</h3>
-        <dl class="variacoes">
-          <dt><code>!som ajustar</code></dt><dd>vídeo inteiro, sem cortar as bordas</dd>
-          <dt><code>!som 2-6</code></dt><dd>só do segundo 2 ao 6</dd>
-          <dt><code>!som nome</code></dt><dd>usa um arquivo da pasta de memes</dd>
-          <dt><code>!som lista</code></dt><dd>mostra os memes da pasta</dd>
-        </dl>
+          <h3>O <code>!criar</code> pega o vídeo de</h3>
+          <dl class="variacoes">
+            <dt>respondendo</dt><dd>um vídeo, ou uma mensagem com link do X/TikTok</dd>
+            <dt><code>!criar &lt;link&gt;</code></dt><dd>um link colado direto no comando</dd>
+            <dt><code>!criar nome</code></dt><dd>um meme da pasta</dd>
+          </dl>
+          <p class="nota">Pra links, ligue "Baixar de links" na aba Memes. Em qualquer <code>!criar</code>: <code>ajustar</code> deixa o vídeo inteiro, sem cortar, e <code>2-6</code> usa só do segundo 2 ao 6.</p>
 
-        <h3>Pausar ou desconectar?</h3>
-        <dl class="variacoes">
-          <dt>Pausar</dt><dd>para de atender o <code>!som</code>, mas a conta continua conectada. Volta sem QR. Fechar a janela faz o mesmo.</dd>
-          <dt>Desconectar</dt><dd>tira o figsom dos aparelhos conectados e apaga a sessão. Pra voltar, só com QR. Se estiver pausado, retome antes.</dd>
-        </dl>
-      </aside>
+          <h3>Outros comandos</h3>
+          <dl class="variacoes">
+            <dt><code>!salvar &lt;link&gt; nome</code></dt><dd>guarda o vídeo na pasta de memes</dd>
+            <dt><code>!memes</code></dt><dd>lista os memes da pasta</dd>
+            <dt><code>!ajuda</code></dt><dd>mostra os comandos no WhatsApp</dd>
+          </dl>
+          <p class="nota">O <code>!som</code> da versão 1.0 continua valendo: é o mesmo que <code>!criar</code>.</p>
+
+          <h3>Pausar ou desconectar?</h3>
+          <dl class="variacoes">
+            <dt>Pausar</dt><dd>para de atender os comandos, mas a conta continua conectada. Volta sem QR. Fechar a janela faz o mesmo.</dd>
+            <dt>Desconectar</dt><dd>tira o figsom dos aparelhos conectados e apaga a sessão. Pra voltar, só com QR. Se estiver pausado, retome antes.</dd>
+          </dl>
+        </aside>
+      </div>
+
+      <!-- aba Memes -->
+      <div id="painel-memes" class="painel painel-memes" role="tabpanel" aria-labelledby="aba-memes" hidden>
+        <section class="cartao baixar">
+          <div class="cartao-cabeca">
+            <span class="icone-adesivo" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11"/><path d="m7 10 5 5 5-5"/><path d="M5 20h14"/></svg>
+            </span>
+            <h2>Baixar vídeo</h2>
+          </div>
+          <label class="chave">
+            <input type="checkbox" id="chk-links">
+            <span class="chave-trilho"></span>
+            <span>Baixar de links (X e TikTok)</span>
+          </label>
+          <p id="baixador-desligado" class="nota">Ao ligar, o figsom baixa o yt&#8209;dlp (uns 25&nbsp;MB) da página oficial dele. Só uma vez.</p>
+          <div id="baixador-ligado" class="baixador-ligado" hidden>
+            <p id="selo-baixador" class="selo" data-estado="pronto" aria-live="polite"><span class="selo-ponto"></span><span id="baixador-status"></span></p>
+            <form id="form-baixar" class="form-baixar">
+              <label class="so-leitor" for="in-link">Link do post</label>
+              <input id="in-link" class="campo" type="text" inputmode="url" placeholder="Link do post no X ou no TikTok" autocomplete="off" spellcheck="false" maxlength="2048">
+              <label class="so-leitor" for="in-nome">Nome (opcional)</label>
+              <div class="form-linha">
+                <input id="in-nome" class="campo" type="text" placeholder="Nome (opcional)" autocomplete="off" spellcheck="false" maxlength="80">
+                <button id="btn-baixar" class="btn btn-primario" type="submit" title="Baixa o vídeo pra pasta de memes">Baixar</button>
+              </div>
+              <p id="baixar-resultado" class="nota resultado" aria-live="polite"></p>
+            </form>
+          </div>
+          <p class="nota dica-celular">No celular: <code>!salvar &lt;link&gt; nome</code> guarda aqui, e <code>!criar &lt;link&gt;</code> já manda a figurinha.</p>
+          <p class="nota legal">Só pra uso pessoal: baixar pode violar os termos dos sites e direitos autorais. Guarda até 60 s do vídeo.</p>
+        </section>
+
+        <section class="cartao biblioteca">
+          <div class="cartao-topo">
+            <div class="cartao-cabeca">
+              <span class="icone-adesivo icone-menta" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/></svg>
+              </span>
+              <h2>Biblioteca <span id="memes-qtd" class="qtd"></span></h2>
+            </div>
+            <div class="cartao-acoes">
+              <button id="btn-atualizar" class="btn btn-mini btn-sec" title="Lê a pasta de memes de novo">Atualizar</button>
+              <button id="btn-abrir-pasta" class="btn btn-mini btn-sec">Abrir pasta</button>
+            </div>
+          </div>
+          <div class="opcoes-fig">
+            <label class="chave chave-mini">
+              <input type="checkbox" id="chk-ajustar">
+              <span class="chave-trilho"></span>
+              <span>Ajustar <span class="nota">(vídeo inteiro)</span></span>
+            </label>
+            <span class="trecho">
+              Trecho
+              <input id="in-ini" class="campo campo-seg" type="text" inputmode="decimal" placeholder="0" maxlength="6" aria-label="Trecho: segundo de início">
+              a
+              <input id="in-fim" class="campo campo-seg" type="text" inputmode="decimal" placeholder="10" maxlength="6" aria-label="Trecho: segundo de fim">
+              s
+            </span>
+          </div>
+          <ul id="grade" class="grade"></ul>
+          <p id="enviar-resultado" class="aviso-flutuante" role="status" aria-live="polite"></p>
+        </section>
+      </div>
 
       <section class="atividade">
         <div class="atividade-topo">
@@ -79,14 +157,14 @@
     </main>
 
     <footer class="rodape">
-      <button id="btn-memes" class="btn btn-sec">Abrir pasta de memes</button>
-      <label class="chave">
+      <button id="btn-memes" class="btn btn-sec" title="Abre a pasta de memes">Pasta de memes</button>
+      <label class="chave" title="Desligado: o figsom só reage ✅ no comando. Ligado: apaga a mensagem do comando depois de enviar a figurinha.">
         <input type="checkbox" id="chk-apagar">
         <span class="chave-trilho"></span>
-        <span>Apagar o <code>!som</code> depois de enviar</span>
+        <span>Apagar o comando depois de enviar</span>
       </label>
       <span class="rodape-espaco"></span>
-      <button id="btn-pausar" class="btn btn-sec" hidden title="Para de atender o !som sem desconectar a conta. Pra voltar não precisa de QR.">Pausar</button>
+      <button id="btn-pausar" class="btn btn-sec" hidden title="Para de atender os comandos sem desconectar a conta. Pra voltar não precisa de QR.">Pausar</button>
       <button id="btn-desconectar" class="btn btn-perigo" hidden title="Tira o figsom dos aparelhos conectados e apaga a sessão. Pra voltar, vai precisar do QR.">Desconectar conta</button>
       <span id="versao" class="versao"></span>
     </footer>

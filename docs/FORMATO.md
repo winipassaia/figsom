@@ -68,17 +68,18 @@ Envolve `proto.Message.decode`: pega os bytes crus de cada mensagem de topo ante
 
 ### Enviar (`src/enviar.js`)
 
-1. Faz o upload do WebP (`prepareWAMessageMedia({ sticker })`) e do OGG (`prepareWAMessageMedia({ audio, seconds })`).
-2. Monta um objeto de mensagem cujo `stickerMessage` fica **no protótipo**. Assim o Baileys enxerga a mensagem como sticker (`mediatype="sticker"`), mas o `encode` não o escreve no topo, porque só codifica propriedades próprias.
-3. Envolve `proto.Message.encode`: se a mensagem tiver o marcador, acrescenta à mão o campo 134 com `StickerMessage` + campo 26 (`AudioMessage`).
-4. Envia com `sock.relayMessage`. O gancho também funciona dentro do `deviceSentMessage` que vai pros seus outros aparelhos.
-5. Guarda o **próprio objeto** enviado (não uma cópia) pro `getMessage`: se algum aparelho pedir reenvio, o Baileys reaproveita o objeto e o gancho escreve o campo 134 de novo. Qualquer cópia (`fromObject`, JSON, `{...msg}`) perde o formato.
+1. Grava no `EXIF` do WebP o nome do pacote e o autor ("Criado pelo APP figsom" / "github @winipassaia"), no mesmo padrão dos apps de figurinha: uma entrada TIFF `0x5741` com o JSON `sticker-pack-name` / `sticker-pack-publisher`. O `VP8X` ganha a marca de EXIF; os quadros não mudam.
+2. Faz o upload do WebP (`prepareWAMessageMedia({ sticker })`) e do OGG (`prepareWAMessageMedia({ audio, seconds })`).
+3. Monta um objeto de mensagem cujo `stickerMessage` fica **no protótipo**. Assim o Baileys enxerga a mensagem como sticker (`mediatype="sticker"`), mas o `encode` não o escreve no topo, porque só codifica propriedades próprias.
+4. Envolve `proto.Message.encode`: se a mensagem tiver o marcador, acrescenta à mão o campo 134 com `StickerMessage` + campo 26 (`AudioMessage`).
+5. Envia com `sock.relayMessage`. O gancho também funciona dentro do `deviceSentMessage` que vai pros seus outros aparelhos.
+6. Guarda o **próprio objeto** enviado (não uma cópia) pro `getMessage`: se algum aparelho pedir reenvio, o Baileys reaproveita o objeto e o gancho escreve o campo 134 de novo. Qualquer cópia (`fromObject`, JSON, `{...msg}`) perde o formato.
 
 O truque depende de detalhes internos do Baileys, por isso a versão fica fixa no `package.json`. Ao iniciar, o figsom confere o formato com um autoteste (`conferirFormato`) e desliga o envio se ele não sair certo. O `npm test` faz a mesma conferência, e o workflow de release roda os testes antes de empacotar.
 
 ## Como investigar você mesmo
 
-1. No modo terminal, ponha `capturar: true` no `index.js`. Não precisa mexer no `soConversaComigo`: a captura vale pra qualquer conversa, e deixar ele `true` evita que um `!som` digitado num grupo dispare.
+1. No modo terminal, ponha `capturar: true` no `index.js`. Não precisa mexer no `soConversaComigo`: a captura vale pra qualquer conversa, e deixar ele `true` evita que um `!criar` digitado num grupo dispare.
 2. Receba uma figurinha com som (enviada direto, não encaminhada).
 3. Veja `dumps/raw/*.txt`: a árvore de campos sem nomes, no estilo de `protoc --decode_raw`.
 4. Veja `dumps/figsom/*/`: o `fig.webp` e o `som.ogg` já descriptografados.
