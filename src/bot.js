@@ -11,6 +11,7 @@
 //   'memes'    () a pasta de memes ganhou um vídeo novo
 
 import makeWASocket, {
+  WAMessageStubType,
   jidNormalizedUser,
   useMultiFileAuthState,
   DisconnectReason,
@@ -30,7 +31,7 @@ import {
   instalarGanchoEncode, conferirFormato, enviarFigSom, paraWebp, paraOgg, definirFfmpeg, inspecionar,
   comPastaTemp, ErroFigsom, limparCaminhos,
 } from './enviar.js'
-import { interpretarComando, textoAjuda } from './comandos.js'
+import { interpretarComando, textoAjuda, acharLink } from './comandos.js'
 import { VIDEO, AUDIO, nomeSeguro, acharArquivo, listarBiblioteca, higienizarNome, nomeDoTitulo, nomeLivre } from './memes.js'
 import { ComponenteYtDlp, validarLink, baixarComYtDlp, acharNoPath, NOME_SITE } from './baixar.js'
 
@@ -62,7 +63,11 @@ export class FigsomBot extends EventEmitter {
     super()
     Object.assign(this, { authDir, memesDir, dumpDir, ffmpeg, dicaFfmpeg, dicaBaixador, apagarPedido, soConversaComigo, capturar })
     definirFfmpeg(ffmpeg)
-    this.logger = pino({ level: 'silent' })
+    // FIGSOM_LOG=<arquivo>: grava o log do Baileys (conexão, criptografia, recibos) pra investigar problemas.
+    // Fica só no seu computador e não tem o texto das mensagens. Desligado por padrão.
+    this.logger = process.env.FIGSOM_LOG
+      ? pino({ level: 'debug' }, pino.destination({ dest: process.env.FIGSOM_LOG, sync: false, mkdir: true }))
+      : pino({ level: 'silent' })
     this.sock = null
     this.parando = false
     this.status = 'parado'
@@ -172,6 +177,10 @@ export class FigsomBot extends EventEmitter {
       if (type !== 'notify' && type !== 'append') return
       for (const msg of messages) {
         try {
+          this.logger.debug({ figsom: 'upsert', type, id: msg.key?.id, fromMe: msg.key?.fromMe,
+            servidor: msg.key?.remoteJid?.split('@')[1], temMensagem: !!msg.message,
+            stub: msg.messageStubType, motivo: msg.messageStubParameters }, 'figsom: mensagem recebida')
+          this.avisarSeIlegivel(sock, msg)
           await this.tratarComando(sock, msg)
           if (this.capturar) await dissecar(msg, this.dumpDir, (t) => this.log(t))
         } catch (e) {
@@ -270,6 +279,15 @@ export class FigsomBot extends EventEmitter {
     } catch (e) {
       this.log(`Não consegui apagar a pasta da sessão (${limparCaminhos(e.message)}). Apague ela à mão: ${limparCaminhos(this.authDir)}`, 'erro')
     }
+  }
+
+  // Mensagem sua, na conversa "Você", que o figsom não conseguiu decifrar: sem isso, o comando some calado.
+  // O WhatsApp costuma reenviar sozinho; se não reenviar, a sessão de criptografia com o celular se perdeu.
+  avisarSeIlegivel(sock, msg) {
+    if (msg.messageStubType !== WAMessageStubType.CIPHERTEXT || !msg.key?.fromMe) return
+    if (!this.ehConversaComigo(sock, msg.key.remoteJid)) return
+    this.ilegiveis = (this.ilegiveis || 0) + 1
+    this.log(`🔒 Chegou uma mensagem sua que o figsom não conseguiu abrir (${limparCaminhos(msg.messageStubParameters?.[0] || 'criptografia')}). O WhatsApp costuma reenviar sozinho em alguns segundos.`, 'aviso')
   }
 
   // ---------- quem sou eu ----------
@@ -551,15 +569,25 @@ export class FigsomBot extends EventEmitter {
 
   async atenderCriar(sock, msg, jid, cmd) {
     const opcoes = cmd.opcoes || {}
-    this.log(`🎬 Pedido recebido: !${cmd.palavra} (${this.descrever(cmd.link ? this.descreverLink(cmd.link) : cmd.nome || 'vídeo respondido', opcoes)})`)
+    // De onde vem o vídeo: link no comando > nome > vídeo respondido > link na mensagem respondida
+    const citada = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage
+    const videoCitado = citada?.videoMessage || citada?.ptvMessage
+    const linkCitado = !cmd.link && !cmd.nome && !videoCitado
+      ? acharLink(citada?.conversation || citada?.extendedTextMessage?.text || citada?.extendedTextMessage?.matchedText)
+      : undefined
+    const link = cmd.link || linkCitado
+    const origem = cmd.link ? this.descreverLink(cmd.link)
+      : cmd.nome ? cmd.nome
+        : linkCitado ? `${this.descreverLink(linkCitado)} respondido`
+          : 'vídeo respondido'
+    this.log(`🎬 Pedido recebido: !${cmd.palavra} (${this.descrever(origem, opcoes)})`)
+    if (cmd.ignorado) this.log(`Ignorei "${cmd.ignorado}": o !${cmd.palavra} com link não usa nome. Pra guardar com nome, use !salvar <link> nome.`, 'aviso')
     try {
       if (cmd.erro) throw new ErroFigsom('uso', cmd.erro)
       if (this.problemaFormato) throw new ErroFigsom('formato', `Envio desligado: ${this.problemaFormato}. Atualize o figsom.`)
       let webp, ogg
-      const citada = msg.message?.extendedTextMessage?.contextInfo?.quotedMessage
-      const videoCitado = citada?.videoMessage || citada?.ptvMessage
-      if (cmd.link) {
-        ;({ webp, ogg } = await this.criarDoLink(cmd.link, opcoes))
+      if (link && !cmd.nome) {
+        ;({ webp, ogg } = await this.criarDoLink(link, opcoes))
       } else if (cmd.nome) {
         ;({ webp, ogg } = await this.carregarMeme(cmd.nome, opcoes))
       } else if (videoCitado) {
@@ -573,7 +601,7 @@ export class FigsomBot extends EventEmitter {
           webp = await paraWebp(tmp, { ...opcoes, formato: 'mov' })
         })
       } else {
-        throw new ErroFigsom('uso', 'Responda um VÍDEO com "!criar" (segure o vídeo → Responder), ou use "!criar nome" ou "!criar <link>".')
+        throw new ErroFigsom('uso', 'Responda um vídeo (ou uma mensagem com link do X/TikTok) com "!criar", ou use "!criar <link>" ou "!criar nome".')
       }
       await this.enviarParaMim(sock, jid, webp, ogg)
       return true
@@ -581,7 +609,7 @@ export class FigsomBot extends EventEmitter {
       const texto = this.mensagemDeErro(e)
       this.log(`✖ ${texto}`, 'erro')
       // quem manda link ou erra o comando geralmente está no celular: responde lá também
-      if (cmd.link || cmd.erro) await this.responder(sock, jid, `⚠️ ${texto}`)
+      if (link || cmd.erro) await this.responder(sock, jid, `⚠️ ${texto}`)
       return false
     }
   }

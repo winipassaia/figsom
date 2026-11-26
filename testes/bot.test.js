@@ -176,7 +176,7 @@ test('!ajuda responde na conversa (uma vez só) e não apaga o comando', async (
   await bot.tratarComando(sock, msg)
   await bot.tratarComando(sock, msg) // a mesma mensagem de novo (append + notify)
   assert.equal(respostas(sock).length, 1)
-  assert.match(respostas(sock)[0], /!criar link/)
+  assert.match(respostas(sock)[0], /!criar <link>/)
   assert.deepEqual(reacoes(sock), ['✅'])
   assert.equal(apagadas(sock).length, 0)
 })
@@ -231,6 +231,40 @@ test('com "apagar o comando" ligado, apaga em vez de reagir ✅', async () => {
   await bot.tratarComando(sock, msg)
   assert.deepEqual(ordem(sock), ['R⏳', 'D'])
   assert.deepEqual(apagadas(sock)[0].arguments[1].delete, msg.key)
+})
+
+// "!criar" respondendo uma mensagem (de texto) que tem link
+const respondendo = (texto, citada) => ({
+  key: { fromMe: true, id: `ID${++contador}`, remoteJid: EU_PN },
+  message: { extendedTextMessage: { text: texto, contextInfo: { quotedMessage: citada } } },
+})
+const TT_LINK = 'https://www.tiktok.com/@a/video/7047596209028074758'
+
+test('!criar respondendo uma mensagem com link usa o link (com as opções do comando)', async () => {
+  bot.baixarLinks = true
+  bot.criarDoLink = mock.fn(async () => ({ webp: Buffer.from('w'), ogg: Buffer.from('o') }))
+  bot.enviarParaMim = mock.fn(async () => {})
+  const sock = sockConectado()
+  await bot.tratarComando(sock, respondendo('!criar 2-6', { extendedTextMessage: { text: `olha isso ${TT_LINK}` } }))
+  await bot.tratarComando(sock, respondendo('!criar', { conversation: 'https://x.com/a/status/1' }))
+  const [c1, c2] = bot.criarDoLink.mock.calls.map((c) => c.arguments)
+  assert.deepEqual(c1, [TT_LINK, { modo: 'cortar', inicio: 2, fim: 6 }])
+  assert.equal(c2[0], 'https://x.com/a/status/1')
+  assert.deepEqual(ordem(sock), ['R⏳', 'R✅', 'R⏳', 'R✅'])
+})
+
+test('!criar respondendo um link com a chave desligada explica como ligar', async () => {
+  const sock = sockConectado()
+  await bot.tratarComando(sock, respondendo('!criar', { conversation: TT_LINK }))
+  assert.deepEqual(ordem(sock), ['R⏳', 'T', 'R❌'])
+  assert.match(respostas(sock)[0], /desligado/)
+})
+
+test('!criar respondendo um texto sem link: ❌ e a explicação na Atividade', async () => {
+  const sock = sockConectado()
+  await bot.tratarComando(sock, respondendo('!criar', { conversation: 'oi, tudo bem?' }))
+  assert.deepEqual(ordem(sock), ['R⏳', 'R❌'])
+  assert.ok(logs.some((l) => l.nivel === 'erro' && /mensagem com link/.test(l.texto)))
 })
 
 test('com "apagar o comando" ligado, um erro não apaga: fica o ❌', async () => {

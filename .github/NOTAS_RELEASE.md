@@ -1,9 +1,10 @@
 ## Novidades da 1.1
 
-- **Baixar do X e do TikTok:** `!criar <link>` cria a figurinha direto de um post, e `!salvar <link> nome` guarda o vídeo na pasta de memes. O componente de download (yt-dlp) **não vem no instalador**: ele só é baixado da página oficial, com o SHA-256 conferido, quando você liga a chave **Baixar de links (X e TikTok)** na aba Memes. YouTube não é suportado.
+- **Baixar do X e do TikTok:** `!criar <link>` (ou responder o link com `!criar`) cria a figurinha direto de um post, e `!salvar <link> nome` guarda o vídeo na pasta de memes. O componente de download (yt-dlp) **não vem no instalador**: ele só é baixado da página oficial, com o SHA-256 conferido, quando você liga a chave **Baixar de links (X e TikTok)** na aba Memes. YouTube não é suportado.
 - **Aba Memes no app:** baixe vídeos por link e veja a biblioteca da pasta de memes com miniaturas. O botão **Criar e enviar** manda a figurinha pra sua conversa "Você", com as opções Ajustar e Trecho.
 - **Comandos novos:** `!criar` (o antigo `!som`, que continua funcionando), `!salvar`, `!memes` e `!ajuda`, que responde no WhatsApp com a lista de comandos.
 - **Reações no lugar de apagar:** o figsom reage ao comando com ⏳ e depois ✅ (ou ❌ se der erro). A mensagem do comando não é mais apagada; quem quiser pode ligar **Apagar o comando depois de enviar** no rodapé.
+- Toda figurinha leva nos dados "Criado pelo APP figsom" e "github @winipassaia" (aparece quando alguém toca nela).
 - Guia de como achar a conversa "Você" no README e no tutorial.
 
 > Baixar vídeos pode violar os termos de uso do X e do TikTok e os direitos autorais de quem fez o vídeo. Use só pra uso pessoal.

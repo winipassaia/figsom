@@ -48,7 +48,7 @@ function renderPalco(e) {
       adesivo,
       el('h1', {}, `Tudo pronto${nome}!`),
       el('p', { class: 'instrucao' },
-        'Mande um vídeo na conversa com você mesmo e responda ele com ', el('code', {}, '!criar'),
+        'Mande um vídeo (ou um link do X/TikTok) na conversa com você mesmo e responda com ', el('code', {}, '!criar'),
         '. A figurinha com som chega em alguns segundos. Seus memes também dá pra mandar daqui, pela aba ', el('b', {}, 'Memes'), '.'),
     )
   } else if (e.status === 'iniciando' || e.status === 'reconectando') {

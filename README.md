@@ -48,7 +48,7 @@ Já vem tudo dentro: não precisa instalar Node.js nem ffmpeg. As somas SHA-256 
 
 1. O figsom conecta no seu WhatsApp como um aparelho vinculado, igual ao WhatsApp Web, pelo QR code.
 2. Na conversa com você mesmo (**"Você"**), você manda um vídeo e responde com `!criar`.
-3. O figsom converte o vídeo em **WebP animado 512×512** e o áudio em **OGG/Opus** (até 10 s).
+3. O figsom converte o vídeo em **WebP animado 512×512** e o áudio em **OGG/Opus** (até 10 s). Toda figurinha leva nos dados "Criado pelo APP figsom" e, embaixo, "github @winipassaia", que aparecem quando alguém toca nela no WhatsApp.
 4. Ele envia a figurinha com som nessa mesma conversa e reage ao seu comando: ⏳ enquanto trabalha, ✅ quando termina (ou ❌ se der erro; o motivo aparece na Atividade).
 5. Você toca nela, **salva nas figurinhas** e manda pra quem quiser pelo teclado.
 
@@ -72,11 +72,19 @@ Um comando mandado com o figsom fechado é atendido quando ele abrir de novo.
 
 Todos na conversa **"Você"**:
 
+O **`!criar`** é um comando só, e pega o vídeo de onde fizer sentido:
+
+| Comando | De onde vem o vídeo |
+|---|---|
+| `!criar` respondendo um vídeo | do vídeo respondido |
+| `!criar` respondendo uma mensagem com link | do post do X ou do TikTok desse link ([precisa ligar](#baixar-do-x-e-do-tiktok)) |
+| `!criar <link>` | do link colado no próprio comando (mesma coisa) |
+| `!criar nome` | de um meme da pasta de memes |
+
+Os outros comandos:
+
 | Comando | O que faz |
 |---|---|
-| `!criar` (respondendo um vídeo) | Transforma o vídeo em figurinha com o áudio dele |
-| `!criar <link>` | Baixa o vídeo de um post do X ou do TikTok e cria a figurinha ([precisa ligar](#baixar-do-x-e-do-tiktok)) |
-| `!criar nome` | Usa um meme da pasta de memes |
 | `!salvar <link> [nome]` | Baixa o vídeo pra pasta de memes e responde com o nome salvo e como usar |
 | `!memes` | Lista os memes da pasta |
 | `!ajuda` | Responde com a lista de comandos |
@@ -153,6 +161,12 @@ npm test         # comandos, baixador (sem internet), formato da figurinha e con
 O modo terminal precisa do ffmpeg no PATH. Guias: [Windows](docs/TERMINAL.md) e [Linux](docs/LINUX.md).
 
 O app usa o ffmpeg de `vendor/ffmpeg/` (ou o da variável `FIGSOM_FFMPEG`, ou o do PATH). Pra empacotar localmente (`npm run dist:win` / `dist:linux`), ponha lá um ffmpeg com `libwebp` e `libopus`: o mesmo build LGPL que o workflow baixa (veja o topo do `release.yml`). Os testes usam o ffmpeg do PATH ou o da variável `FIGSOM_FFMPEG`. Os testes do baixador usam um GitHub falso e não acessam a internet; o download de verdade do X e do TikTok fica fora do CI.
+
+Pra investigar problema de conexão ou de mensagem que não chega, rode com `FIGSOM_LOG` apontando pra um arquivo: ele grava o log do Baileys (conexão, criptografia, recibos), sem o texto das mensagens. Fica só no seu computador.
+
+```bash
+FIGSOM_LOG=/tmp/figsom.log npm run app
+```
 
 Prints das telas, sem conectar no WhatsApp (os memes de exemplo são gerados pelo ffmpeg):
 

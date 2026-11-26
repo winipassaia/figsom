@@ -11,12 +11,18 @@
 const COMANDO = /^!(criar|som|salvar|memes|ajuda)(?=\s|$)/i
 const TRECHO = /^(\d+(?:[.,]\d+)?)-(\d+(?:[.,]\d+)?)$/
 const AJUSTAR = /^(ajustar|inteiro)$/i
-// palavra que a pessoa pode escrever antes do link ("!criar tiktok https://...")
-const SITE = /^(x|twitter|tiktok)$/i
+// palavras que a pessoa escreve junto do link e que não são nome: "!criar tiktok https://...",
+// "!criar link https://..." (copiando o "!criar <link>" da ajuda ao pé da letra)
+const JUNTO_DO_LINK = /^(x|twitter|tiktok|link|<link>)$/i
 
 // Parece link? Com http(s):// ou no formato "dominio.com/caminho" (sem o https://)
 export function pareceLink(t) {
   return /^https?:\/\/\S+$/i.test(t) || /^(?:[a-z0-9-]+\.)+[a-z]{2,}\/\S*$/i.test(t)
+}
+
+// Primeiro link de um texto qualquer (ex.: a mensagem respondida com "!criar")
+export function acharLink(texto) {
+  return String(texto ?? '').split(/\s+/).map((t) => t.replace(/^[<(["']+|[>)\]"'.,;!?]+$/g, '')).find(pareceLink)
 }
 
 const numero = (s) => parseFloat(s.replace(',', '.'))
@@ -33,7 +39,8 @@ export function interpretarComando(texto) {
 
   const opcoes = { modo: 'cortar' }
   const links = []
-  const resto = []
+  const antes = [] // palavras antes do link (ou todas, se não tiver link)
+  const depois = [] // palavras depois do link
   let trechoRuim = null
   for (const tok of tokens) {
     const faixa = tok.match(TRECHO)
@@ -43,8 +50,9 @@ export function interpretarComando(texto) {
       if (!(opcoes.fim > opcoes.inicio)) trechoRuim = tok
     } else if (AJUSTAR.test(tok)) opcoes.modo = 'ajustar'
     else if (pareceLink(tok)) links.push(tok)
-    else resto.push(tok)
+    else (links.length ? depois : antes).push(tok)
   }
+  const resto = [...antes, ...depois]
   const exemplo = palavra === 'salvar' ? '!salvar <link> nome 5-20' : `!${palavra} 2-6`
 
   // !som lista (atalho antigo do !memes)
@@ -57,18 +65,21 @@ export function interpretarComando(texto) {
   if (trechoRuim) return erro(`Trecho inválido (${trechoRuim}): o fim precisa vir depois do início. Exemplo: ${exemplo}`)
   if (links.length > 1) return erro('Mande um link só por vez.')
   const link = links[0]
-  const nomeTokens = link ? resto.filter((r) => !SITE.test(r)) : resto
-  const nome = nomeTokens.join(' ') || undefined
 
   if (comando === 'salvar') {
-    if (!link) return erro('Faltou o link do vídeo. Exemplo: !salvar https://x.com/... nome')
+    if (!link) return erro('Faltou o link do vídeo. Exemplo: !salvar https://x.com/... gato')
+    // "!salvar link <url> gato": só o que vem antes do link pode ser palavra solta; o nome é o resto
+    const nome = [...antes.filter((r) => !JUNTO_DO_LINK.test(r)), ...depois].join(' ') || undefined
     const { modo, ...trecho } = opcoes // "ajustar" só vale na hora de criar a figurinha
     return { comando, palavra, link, nome, opcoes: trecho }
   }
-  if (link && nome) {
-    return erro(`Com link, o !${palavra} não usa nome. Pra guardar o vídeo com nome, use: !salvar <link> ${nome}`)
+  if (link) {
+    // !criar com link não usa nome: palavras a mais não travam o comando, só são avisadas
+    const sobra = resto.filter((r) => !JUNTO_DO_LINK.test(r)).join(' ')
+    return { comando, palavra, link, opcoes, ...(sobra ? { ignorado: sobra } : {}) }
   }
-  return { comando, palavra, ...(link ? { link } : {}), ...(nome ? { nome } : {}), opcoes }
+  const nome = resto.join(' ') || undefined
+  return { comando, palavra, ...(nome ? { nome } : {}), opcoes }
 }
 
 // Resposta do !ajuda. Não pode começar com "!" (senão o figsom leria a própria resposta como comando).
@@ -76,14 +87,16 @@ export function textoAjuda({ links = false, dicaLinks = '' } = {}) {
   return [
     '🔊 *figsom*: comandos (só aqui, na conversa com você mesmo)',
     '',
-    '*!criar* respondendo um vídeo: vira figurinha com som',
-    '*!criar nome*: usa um meme da pasta',
-    '*!criar link*: baixa do X ou do TikTok e cria',
-    '*!salvar link nome*: guarda o vídeo na pasta de memes',
+    '*!criar*: faz a figurinha com som. O vídeo pode vir de:',
+    '• um vídeo ou uma mensagem com link que você responde com !criar',
+    '• um link do X ou do TikTok: !criar <link> (cole o link no lugar de <link>)',
+    '• um meme da pasta: !criar nome',
+    '',
+    '*!salvar <link> nome*: guarda o vídeo na pasta de memes',
     '*!memes*: lista os memes da pasta',
     '*!ajuda*: esta lista',
     '',
-    'Opções da figurinha: *ajustar* (vídeo inteiro, sem cortar) e um trecho em segundos, como *2-6*. Ex.: !criar 2-6 ajustar',
+    'Opções do !criar: *ajustar* (vídeo inteiro, sem cortar) e um trecho em segundos, como *2-6*. Ex.: !criar 2-6 ajustar',
     links ? 'Links aceitos: X (Twitter) e TikTok.' : `Baixar de links está desligado. ${dicaLinks}`.trim(),
   ].join('\n')
 }

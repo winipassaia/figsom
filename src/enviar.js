@@ -264,8 +264,112 @@ export async function inspecionar(entrada) {
   }
 }
 
+// ---------- assinatura da figurinha ----------
+// O WhatsApp lê o nome do pacote e o autor de um bloco EXIF dentro do WebP (o mesmo padrão
+// dos apps de figurinha) e mostra quando alguém toca na figurinha: o nome em cima, o autor embaixo.
+export const ASSINATURA = {
+  id: 'io.github.winipassaia.figsom',
+  pacote: 'Criado pelo APP figsom',
+  autor: 'github @winipassaia',
+}
+
+export function exifFigurinha({ id, pacote, autor } = ASSINATURA) {
+  const json = Buffer.from(JSON.stringify({
+    'sticker-pack-id': id, 'sticker-pack-name': pacote, 'sticker-pack-publisher': autor, emojis: [],
+  }), 'utf8')
+  // TIFF little-endian com uma entrada só: tag 0x5741, tipo 7 (bytes), tamanho do JSON, dados logo depois (byte 22)
+  const cabecalho = Buffer.from([0x49, 0x49, 0x2a, 0x00, 0x08, 0x00, 0x00, 0x00, 0x01, 0x00, 0x41, 0x57, 0x07, 0x00, 0, 0, 0, 0, 0x16, 0x00, 0x00, 0x00])
+  cabecalho.writeUInt32LE(json.length, 14)
+  return Buffer.concat([cabecalho, json])
+}
+
+// Blocos do WebP: [{ tipo: 'VP8X', dados }...]
+function lerBlocos(buf) {
+  const blocos = []
+  let pos = 12
+  while (pos + 8 <= buf.length) {
+    const tipo = buf.toString('ascii', pos, pos + 4)
+    const tam = buf.readUInt32LE(pos + 4)
+    if (pos + 8 + tam > buf.length) return null // arquivo cortado: melhor não mexer
+    blocos.push({ tipo, dados: buf.subarray(pos + 8, pos + 8 + tam) })
+    pos += 8 + tam + (tam & 1)
+  }
+  return blocos
+}
+
+function montarWebp(blocos) {
+  const partes = []
+  for (const { tipo, dados } of blocos) {
+    const cab = Buffer.alloc(8)
+    cab.write(tipo, 0, 'ascii')
+    cab.writeUInt32LE(dados.length, 4)
+    partes.push(cab, dados)
+    if (dados.length & 1) partes.push(Buffer.alloc(1)) // blocos de tamanho ímpar ganham 1 byte de enchimento
+  }
+  const corpo = Buffer.concat(partes)
+  const cab = Buffer.alloc(12)
+  cab.write('RIFF', 0, 'ascii')
+  cab.writeUInt32LE(corpo.length + 4, 4)
+  cab.write('WEBP', 8, 'ascii')
+  return Buffer.concat([cab, corpo])
+}
+
+// WebP simples (só VP8 ou VP8L) não tem onde marcar o EXIF: cria o VP8X com o tamanho da imagem
+function criarVp8x(blocos) {
+  const img = blocos.find((b) => b.tipo === 'VP8 ' || b.tipo === 'VP8L')
+  if (!img) return null
+  let w, h, alfa = false
+  if (img.tipo === 'VP8L') {
+    if (img.dados[0] !== 0x2f || img.dados.length < 5) return null
+    const bits = img.dados.readUInt32LE(1)
+    w = (bits & 0x3fff) + 1
+    h = ((bits >>> 14) & 0x3fff) + 1
+    alfa = !!((bits >>> 28) & 1)
+  } else {
+    if (img.dados.length < 10) return null
+    w = img.dados.readUInt16LE(6) & 0x3fff
+    h = img.dados.readUInt16LE(8) & 0x3fff
+  }
+  const dados = Buffer.alloc(10)
+  dados[0] = alfa ? 0x10 : 0
+  dados.writeUIntLE(w - 1, 4, 3)
+  dados.writeUIntLE(h - 1, 7, 3)
+  return { tipo: 'VP8X', dados }
+}
+
+// Grava a assinatura no WebP (troca a que já existir). Se o arquivo for estranho, devolve ele como veio.
+export function comAssinatura(webp, assinatura = ASSINATURA) {
+  if (!ehWebp(webp)) return webp
+  let blocos = lerBlocos(webp)
+  if (!blocos) return webp
+  let vp8x = blocos.find((b) => b.tipo === 'VP8X')
+  if (!vp8x) {
+    vp8x = criarVp8x(blocos)
+    if (!vp8x) return webp
+    blocos = [vp8x, ...blocos]
+  }
+  const flags = Buffer.from(vp8x.dados)
+  flags[0] |= 0x08 // "tem EXIF"
+  vp8x.dados = flags
+  blocos = blocos.filter((b) => b.tipo !== 'EXIF')
+  blocos.push({ tipo: 'EXIF', dados: exifFigurinha(assinatura) })
+  return montarWebp(blocos)
+}
+
+// Lê a assinatura de volta (pros testes e pra conferir figurinhas)
+export function lerAssinatura(webp) {
+  const exif = ehWebp(webp) && lerBlocos(webp)?.find((b) => b.tipo === 'EXIF')
+  if (!exif) return null
+  try {
+    return JSON.parse(exif.dados.subarray(22, 22 + exif.dados.readUInt32LE(14)).toString('utf8'))
+  } catch {
+    return null
+  }
+}
+
 // ---------- envio ----------
-export async function enviarFigSom(sock, jid, webp, ogg, logger) {
+export async function enviarFigSom(sock, jid, webpOriginal, ogg, logger) {
+  const webp = comAssinatura(webpOriginal) // "Criado pelo APP figsom" / "github @winipassaia"
   const { animada, w, h } = webpInfo(webp)
   const seconds = duracaoOgg(ogg)
   const up = { upload: sock.waUploadToServer, logger }

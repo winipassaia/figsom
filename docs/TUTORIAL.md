@@ -79,6 +79,8 @@ Mais detalhes no [README](../README.md#como-achar-a-conversa-você).
 
 ### 2. Mande um vídeo e responda com `!criar`
 
+> Também vale responder uma mensagem com link do X ou do TikTok: veja a [Parte 4](#parte-4-baixar-do-x-e-do-tiktok).
+
 1. Envie um vídeo curto nessa conversa. O figsom usa no máximo **10 segundos**. Pra vídeos com muito movimento, 3 a 5 segundos funcionam melhor (a figurinha precisa ficar com até ~1 MB pra animar).
 2. **Segure o dedo no vídeo** e toque em **Responder**.
 3. Escreva `!criar` e envie.
@@ -94,6 +96,8 @@ O figsom reage ao seu `!criar` com ⏳ enquanto trabalha. Em alguns segundos a *
 1. Toque na figurinha.
 2. Toque em **Adicionar às figurinhas** (ou na ⭐).
 3. Pronto: ela fica no seu **teclado de figurinhas** pra mandar em qualquer conversa.
+
+Quem tocar na figurinha vê "Criado pelo APP figsom" e, embaixo, "github @winipassaia".
 
 > [!IMPORTANT]
 > **Não encaminhe a figurinha**, porque encaminhar perde o som. Mande sempre pelo teclado de figurinhas.
@@ -161,11 +165,14 @@ A chave vem desligada: sem ela, nada é baixado e os comandos com link respondem
 
 ### Usar pelo celular
 
-Copie o link do post (no app do X ou do TikTok: **Compartilhar → Copiar link**) e mande na conversa "Você":
+Copie o link do post (no app do X ou do TikTok: **Compartilhar → Copiar link**). Aí, na conversa "Você", tem dois jeitos que dão no mesmo:
+
+- **Cole o link, segure em cima dele → Responder → `!criar`**, igual faz com vídeo.
+- Ou mande tudo de uma vez: `!criar` seguido do link.
 
 | Comando | Resultado |
 |---|---|
-| `!criar <link>` | Baixa os 10 primeiros segundos e manda a figurinha |
+| `!criar <link>` (ou respondendo o link com `!criar`) | Baixa os 10 primeiros segundos e manda a figurinha |
 | `!criar <link> 5-12 ajustar` | As opções do `!criar` valem aqui também |
 | `!salvar <link> gato` | Guarda o vídeo (até 60 s) na pasta de memes como `gato`. Depois é só `!criar gato`. |
 | `!salvar <link>` | Sem nome, ele usa as primeiras palavras do post. A resposta diz o nome salvo. |

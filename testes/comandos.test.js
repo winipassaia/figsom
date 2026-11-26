@@ -1,7 +1,7 @@
 // O que o figsom entende na conversa "Você" (sem WhatsApp).
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
-import { interpretarComando as ler, textoAjuda, pareceLink } from '../src/comandos.js'
+import { interpretarComando as ler, textoAjuda, pareceLink, acharLink } from '../src/comandos.js'
 
 const X = 'https://x.com/fulano/status/1790637656616943991'
 const TT = 'https://www.tiktok.com/@fulano/video/7047596209028074758'
@@ -46,9 +46,30 @@ test('link sem https:// também é reconhecido', () => {
   assert.equal(pareceLink('1,5-4'), false)
 })
 
-test('!criar com link e nome junto explica o !salvar; dois links é erro', () => {
-  assert.match(ler(`!criar gato ${X}`).erro, /!salvar <link> gato/)
+test('!criar com link e palavra a mais não trava: baixa e avisa o que ignorou; dois links é erro', () => {
+  assert.deepEqual(ler(`!criar gato ${X}`), { comando: 'criar', palavra: 'criar', link: X, opcoes: { modo: 'cortar' }, ignorado: 'gato' })
   assert.match(ler(`!criar ${X} ${TT}`).erro, /um link só/)
+})
+
+test('acha o link numa mensagem qualquer (a que foi respondida com !criar)', () => {
+  assert.equal(acharLink('olha isso https://x.com/a/status/1?s=19 kkkk'), 'https://x.com/a/status/1?s=19')
+  assert.equal(acharLink('(https://vm.tiktok.com/ZMabc/)'), 'https://vm.tiktok.com/ZMabc/')
+  assert.equal(acharLink('vê: x.com/a/status/1.'), 'x.com/a/status/1')
+  assert.equal(acharLink('sem link nenhum aqui'), undefined)
+  assert.equal(acharLink(undefined), undefined)
+})
+
+test('"!criar link <url>", copiado da ajuda ao pé da letra, baixa normalmente', () => {
+  const url = 'https://x.com/i/status/2119512469618270459'
+  assert.deepEqual(ler(`!criar link ${url}`), { comando: 'criar', palavra: 'criar', link: url, opcoes: { modo: 'cortar' } })
+  assert.deepEqual(ler(`!criar <link> ${url} 2-6`).opcoes, { modo: 'cortar', inicio: 2, fim: 6 })
+  assert.equal(ler(`!criar link ${url}`).erro, undefined)
+  // no !salvar, "link" antes da URL é ignorado; depois dela, é o nome
+  assert.equal(ler(`!salvar link ${url} creucreu`).nome, 'creucreu')
+  assert.equal(ler(`!salvar link ${url}`).nome, undefined)
+  assert.equal(ler(`!salvar ${url} link`).nome, 'link')
+  // sem URL, "link" é só o nome de um meme
+  assert.equal(ler('!criar link').nome, 'link')
 })
 
 test('trecho invertido vira erro do comando', () => {
@@ -90,5 +111,6 @@ test('a resposta do !ajuda não é lida como comando (o figsom recebe a própria
   assert.equal(ler(textoAjuda({ links: true })), null)
   assert.equal(ler(textoAjuda({ links: false, dicaLinks: 'Ligue a chave.' })), null)
   assert.match(textoAjuda({ links: false, dicaLinks: 'Ligue a chave.' }), /desligado\. Ligue a chave\./)
-  assert.match(textoAjuda({ links: true }), /!salvar link nome/)
+  assert.match(textoAjuda({ links: true }), /!salvar <link> nome/)
+  assert.match(textoAjuda({ links: true }), /!criar <link>/)
 })

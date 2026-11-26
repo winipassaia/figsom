@@ -77,7 +77,7 @@ export async function rodarDemo({ janela, estado, enviar, publico, addLog, QRCod
   log('info', '⚙️  Convertendo vídeo em figurinha + áudio...')
   log('info', '⬆️  Enviando...')
   log('ok', '✅ Figurinha com som enviada! (354 KB, 6s) Toque nela e salve nas figurinhas.')
-  log('erro', '✖ Responda um VÍDEO com "!criar" (segure o vídeo → Responder), ou use "!criar nome" ou "!criar <link>".')
+  log('erro', '✖ Responda um vídeo (ou uma mensagem com link do X/TikTok) com "!criar", ou use "!criar <link>" ou "!criar nome".')
   await foto('3-conectado')
 
   // aba Memes com o baixador ligado
