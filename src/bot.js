@@ -11,6 +11,7 @@
 //   'memes'    () a pasta de memes ganhou um vídeo novo
 
 import makeWASocket, {
+  proto,
   WAMessageStubType,
   jidNormalizedUser,
   useMultiFileAuthState,
@@ -44,6 +45,32 @@ const GUARDAR_ENVIADAS_MS = 60 * 60 * 1000 // pra reenviar se algum aparelho ped
 const espera = (ms) => new Promise((r) => setTimeout(r, ms))
 const comPrazo = (promessa, ms) => Promise.race([promessa, espera(ms).then(() => { throw new Error('tempo esgotado') })])
 
+// ---------- sincronização inicial ----------
+// Ao vincular, o celular manda pro aparelho novo uma "sincronização": contatos, endereços (LID↔número)
+// e conversas recentes. Até a 1.1.0 o figsom recusava TUDO, e o próprio Baileys avisa que isso deixa a
+// sessão instável: na prática, depois de algumas horas os seus aparelhos paravam de repassar as SUAS
+// mensagens pro figsom (o "!criar" sumia calado) e só um QR novo resolvia.
+// Desde a 1.1.1: aceita só o mínimo (contatos e endereços), sem nenhuma conversa nem mensagem. Nada disso
+// é guardado nem mostrado (o figsom nem escuta o evento messaging-history.set); os endereços vão pra
+// sessão, como já iam. Testado: conexão mantida de um dia pro outro, com o PC reiniciado no meio.
+// Diagnóstico: FIGSOM_SYNC=minima|padrao|nenhuma troca o modo sem recompilar.
+const TIPO = proto.HistorySync.HistorySyncType
+// Marca na pasta da sessão: "esta conexão foi vinculada já com a sincronização certa" (1.1.1+).
+// Some junto com a sessão ao desconectar. Sem ela, a conexão veio da 1.1.0 e vale vincular de novo.
+const MARCA_VINCULO = 'figsom-vinculo.json'
+export const MODOS_SINCRONIZACAO = {
+  // contatos (nomes) e dados auxiliares com os endereços LID; nenhuma conversa
+  minima: new Set([TIPO.PUSH_NAME, TIPO.NON_BLOCKING_DATA]),
+  // padrão do Baileys: tudo menos o histórico completo (inclui conversas recentes, descartadas na hora)
+  padrao: new Set(Object.values(TIPO).filter((t) => typeof t === 'number' && t !== TIPO.FULL)),
+  // comportamento da 1.1.0: recusa tudo
+  nenhuma: new Set(),
+}
+export function politicaSincronizacao(modo) {
+  const aceitos = MODOS_SINCRONIZACAO[modo] || MODOS_SINCRONIZACAO.minima
+  return ({ syncType } = {}) => aceitos.has(syncType)
+}
+
 let ganchosInstalados = false
 
 export class FigsomBot extends EventEmitter {
@@ -59,8 +86,10 @@ export class FigsomBot extends EventEmitter {
     apagarPedido = false, // apagar o comando depois de enviar (a reação ✅ já confirma)
     soConversaComigo = true,
     capturar = false,
+    sincronizacao = process.env.FIGSOM_SYNC || 'minima', // veja MODOS_SINCRONIZACAO
   } = {}) {
     super()
+    this.sincronizacao = MODOS_SINCRONIZACAO[sincronizacao] ? sincronizacao : 'minima'
     Object.assign(this, { authDir, memesDir, dumpDir, ffmpeg, dicaFfmpeg, dicaBaixador, apagarPedido, soConversaComigo, capturar })
     definirFfmpeg(ffmpeg)
     // FIGSOM_LOG=<arquivo>: grava o log do Baileys (conexão, criptografia, recibos) pra investigar problemas.
@@ -139,8 +168,8 @@ export class FigsomBot extends EventEmitter {
       auth: state,
       logger: this.logger,
       markOnlineOnConnect: false,
-      syncFullHistory: false, // não puxa histórico de conversas
-      shouldSyncHistoryMessage: () => false,
+      syncFullHistory: false, // nunca pede o histórico completo
+      shouldSyncHistoryMessage: politicaSincronizacao(this.sincronizacao),
       getMessage: async (key) => this.enviadas.get(key.id)?.mensagem,
     })
     this.sock = sock
@@ -155,6 +184,7 @@ export class FigsomBot extends EventEmitter {
       if (!atual()) return // socket antigo: ignora tudo
       try {
         if (qr) {
+          this.pareando = true // a próxima conexão aberta é um vínculo novo
           this.setStatus('aguardando-qr')
           this.emit('qr', qr)
         }
@@ -164,6 +194,7 @@ export class FigsomBot extends EventEmitter {
           const numero = (sock.user?.id || '').split(':')[0].split('@')[0]
           this.emit('conta', { nome: sock.user?.name || '', numero })
           this.log(`Conectado${sock.user?.name ? ' como ' + sock.user.name : ''}! Agora é só usar o "!criar" na conversa com você mesmo ("!ajuda" mostra todos os comandos).`, 'ok')
+          await this.conferirVinculo()
         }
         if (connection === 'close') await this.aoFechar(lastDisconnect, geracao)
       } catch (e) {
@@ -188,6 +219,23 @@ export class FigsomBot extends EventEmitter {
         }
       }
     })
+  }
+
+  // Vínculo novo: grava a marca. Vínculo antigo (feito na 1.1.0, sem sincronização): avisa uma vez por
+  // conexão que vale desconectar e conectar de novo, senão o figsom pode parar de receber os comandos.
+  async conferirVinculo() {
+    const arq = path.join(this.authDir, MARCA_VINCULO)
+    if (this.pareando) {
+      this.pareando = false
+      const marca = { sincronizacao: this.sincronizacao, vinculadoEm: new Date().toISOString() }
+      await fs.writeFile(arq, JSON.stringify(marca, null, 2)).catch(() => {})
+      return
+    }
+    try {
+      await fs.access(arq)
+    } catch {
+      this.log('⚠️ Esta conexão foi feita numa versão antiga do figsom e pode parar de receber os seus comandos depois de algumas horas. Pra evitar, clique em Desconectar conta e conecte de novo pelo QR (só uma vez). No modo terminal: remova o figsom em "Aparelhos conectados" no celular, apague a pasta auth e rode de novo.', 'aviso')
+    }
   }
 
   async aoFechar(lastDisconnect, geracao) {

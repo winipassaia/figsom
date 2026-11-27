@@ -55,7 +55,7 @@ Já vem tudo dentro: não precisa instalar Node.js nem ffmpeg. As somas SHA-256 
 > [!NOTE]
 > **Encaminhar a figurinha perde o áudio.** Use sempre a figurinha salva, pelo teclado.
 
-O figsom só aceita comandos na conversa "Você", não guarda mensagens de ninguém e não baixa histórico. A pasta da sessão guarda só o que o protocolo do WhatsApp exige pra funcionar (chaves de criptografia e identificadores de contatos), como qualquer aparelho vinculado.
+O figsom só aceita comandos na conversa "Você", não guarda mensagens de ninguém e não baixa suas conversas. Ao conectar, o WhatsApp manda pra todo aparelho vinculado uma sincronização inicial: o figsom aceita só a parte de contatos e endereços, que ele precisa pra conexão não cair com o tempo, e recusa as conversas. A pasta da sessão guarda só o que o protocolo do WhatsApp exige pra funcionar (chaves de criptografia e identificadores de contatos), como qualquer aparelho vinculado.
 
 Um comando mandado com o figsom fechado é atendido quando ele abrir de novo.
 

@@ -192,7 +192,7 @@ O `!salvar` nunca apaga nada: se já existir um `gato`, ele salva como `gato-2` 
 |---|---|
 | "O Windows protegeu o computador" | **Mais informações** → **Executar assim mesmo**. |
 | O QR não aparece e fica em "Conectando…" | Confira sua internet. A Atividade mostra se ele está tentando de novo. |
-| `!criar` não faz nada (nem aparece o ⏳) | Confira se está na conversa **"Você"** ([como achar](#como-achar-a-conversa-você)) e se o figsom está aberto e **Conectado**. |
+| `!criar` não faz nada (nem aparece o ⏳) | Confira se está na conversa **"Você"** ([como achar](#como-achar-a-conversa-você)) e se o figsom está aberto e **Conectado**. Se estiver tudo certo e mesmo assim nada acontecer, clique em **Desconectar conta** e conecte de novo pelo QR. Quem vinculou na 1.1.0 precisa fazer isso uma vez: o figsom avisa na Atividade. |
 | O comando ficou com ❌ | Deu erro: o motivo aparece na **Atividade** do figsom (nos comandos com link, ele também responde na conversa). O mais comum é esquecer de **responder** o vídeo (segurar → Responder). |
 | O figsom parou de apagar o `!som` | Na versão 1.1, a mensagem do comando fica e ganha um ✅. Pra voltar a apagar, ligue **Apagar o comando depois de enviar** no rodapé. |
 | A figurinha chegou sem som | Ela foi encaminhada. Mande pelo teclado de figurinhas. |

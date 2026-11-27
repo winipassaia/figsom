@@ -1,3 +1,8 @@
+## Novidades da 1.1.1
+
+- **Corrigido: o figsom parava de responder depois de algumas horas.** Ele continuava "Conectado", mas o `!criar` sumia sem resposta, e só um QR novo resolvia. A causa era o figsom recusar toda a sincronização inicial que o WhatsApp manda pra aparelhos vinculados. Agora ele aceita só a parte mínima, de contatos e endereços, e continua recusando as conversas. Nada disso é guardado nem mostrado.
+- **Importante pra quem já usava a 1.1.0:** depois de atualizar, clique em **Desconectar conta** e conecte de novo pelo QR, **uma vez só**. A conexão antiga foi feita sem essa sincronização e pode continuar parando. O figsom mostra um aviso na Atividade enquanto isso não for feito.
+
 ## Novidades da 1.1
 
 - **Baixar do X e do TikTok:** `!criar <link>` (ou responder o link com `!criar`) cria a figurinha direto de um post, e `!salvar <link> nome` guarda o vídeo na pasta de memes. O componente de download (yt-dlp) **não vem no instalador**: ele só é baixado da página oficial, com o SHA-256 conferido, quando você liga a chave **Baixar de links (X e TikTok)** na aba Memes. YouTube não é suportado.
