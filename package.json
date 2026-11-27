@@ -1,6 +1,6 @@
 {
   "name": "figsom",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": true,
   "type": "module",
   "description": "Crie e envie figurinhas com som no WhatsApp a partir de qualquer vídeo",
